@@ -13,7 +13,6 @@
 		"vite": "^4.4.9"
 	},
 	"dependencies": {
-		"three": "^0.156.1",
-		"twitch-chat-emotes-threejs": "^0.4.1"
+		"three": "^0.156.1"
 	}
 }
