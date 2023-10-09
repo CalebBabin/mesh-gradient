@@ -95,7 +95,7 @@ const fragmentShader = /*glsl*/`
 			(originalUv.x - distance(height, 0.0)) * totalAlpha,
 			(originalUv.y - distance(height, 0.0)) * totalAlpha,
 			(1.0 - (swirlOffset.x - 1.0) * 0.1) * totalAlpha,
-			totalAlpha
+			pow(totalAlpha, 4.0)
 		), vec4(1.0), line);
 	}
 `;
@@ -150,7 +150,7 @@ const renderer = new WebGLRenderer({
 renderer.toneMapping = NoToneMapping;
 
 const scene = new Scene();
-const geometry = new PlaneGeometry(1, 0.1, 512, 4);
+const geometry = new PlaneGeometry(1, 0.15, 512, 64);
 
 const uniforms = {
 	viewportSize: {
@@ -193,8 +193,9 @@ function resize() {
 	uniforms.viewportSize.value[1] = height * multiplier;
 }
 
+const timeOffset = Math.random() * 600000;
 function draw() {
-	uniforms.uTime.value = performance.now();
+	uniforms.uTime.value = performance.now() + timeOffset;
 
 	renderer.render(scene, camera);
 	window.requestAnimationFrame(draw);
