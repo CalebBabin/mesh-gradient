@@ -89,12 +89,13 @@ const fragmentShader = /*glsl*/`
 	void main() {
 
 		float line = pow(1.0 - distance(vUv.y, 0.35) * 2.0, 20.0);
+		float totalAlpha = 1.0 - distance(originalUv.y, 0.5)*2.0;
 		
 		gl_FragColor = mix(vec4(
-			vUv.x - distance(height, 0.0),
-			1.0 - (swirlOffset.x - 1.0) * 0.1,
-			vUv.y - distance(height, 0.0),
-			1.0 - distance(originalUv.y, 0.5)*2.0
+			(vUv.x - distance(height, 0.0)) * totalAlpha,
+			(vUv.y - distance(height, 0.0)) * totalAlpha,
+			(1.0 - (swirlOffset.x - 1.0) * 0.1) * totalAlpha,
+			totalAlpha
 		), vec4(1.0), line);
 	}
 `;
@@ -117,8 +118,8 @@ const vertexShader = /*glsl*/`
 
 		float offset = 0.0;
 		float slowTime = uTime / 30000.0;
-		offset += snoise(vec3(vUv.x * 4.0 - slowTime, vUv.y * 4.0 * 2.0, slowTime * 2.5)) * 0.05;
-		offset += snoise(vec3(vUv.x * 2.0 + slowTime, vUv.y * 2.0 * 2.0, slowTime * 2.0)) * 0.05;
+		offset += snoise(vec3(vUv.x * 2.0 - slowTime, vUv.y * 2.0 * 2.0, slowTime * 2.5)) * 0.05;
+		offset += snoise(vec3(vUv.x * 1.0 + slowTime, vUv.y * 1.0 * 2.0, slowTime * 2.0)) * 0.05;
 
 		swirlOffset = vec2(
 			snoise(vec3(vUv.x * 6.0, vUv.y * 6.0, slowTime * 2.0)) * 3.14,
@@ -142,8 +143,8 @@ const vertexShader = /*glsl*/`
 
 
 const renderer = new WebGLRenderer({
-	antialias: false,
-	premultipliedAlpha: false
+	antialias: true,
+	premultipliedAlpha: true
 });
 
 renderer.toneMapping = NoToneMapping;
@@ -166,7 +167,7 @@ const material = new ShaderMaterial({
 	vertexShader,
 	uniforms: uniforms,
 	transparent: true,
-	premultipliedAlpha: false,
+	premultipliedAlpha: true,
 	depthTest: false,
 	depthWrite: false,
 	side: DoubleSide,
