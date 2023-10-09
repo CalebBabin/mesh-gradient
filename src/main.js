@@ -150,7 +150,7 @@ const renderer = new WebGLRenderer({
 renderer.toneMapping = NoToneMapping;
 
 const scene = new Scene();
-const geometry = new PlaneGeometry(1, 0.15, 512, 64);
+const geometry = new PlaneGeometry(1, 0.15, 512, 5);
 
 const uniforms = {
 	viewportSize: {
