@@ -79,6 +79,7 @@ float snoise(vec3 v) {
 const fragmentShader = /*glsl*/`
 	precision highp float;
 	varying vec2 vUv;
+	varying vec2 originalUv;
 	varying float height;
 	uniform float uTime;
 	varying vec2 swirlOffset;
@@ -90,16 +91,17 @@ const fragmentShader = /*glsl*/`
 		float line = pow(1.0 - distance(vUv.y, 0.35) * 2.0, 20.0);
 		
 		gl_FragColor = mix(vec4(
-			vUv.x,
-			1.0,//0.1 + v1 * 0.25 + v2 * 0.6,
-			vUv.y,
-			0.0
+			vUv.x - distance(height, 0.0),
+			1.0 - (swirlOffset.x - 1.0) * 0.1,
+			vUv.y - distance(height, 0.0),
+			1.0 - distance(originalUv.y, 0.5)*2.0
 		), vec4(1.0), line);
 	}
 `;
 
 const vertexShader = /*glsl*/`
 	varying vec2 vUv;
+	varying vec2 originalUv;
 	varying vec2 swirlOffset;
 	varying float height;
 	uniform vec2 viewportSize;
@@ -109,6 +111,7 @@ const vertexShader = /*glsl*/`
 
 	void main() {
 		vUv = vec2(uv.x * viewportSize.x, uv.y * viewportSize.y);
+		originalUv = vec2(uv.x, uv.y);
 
 		vec3 pos = position;
 
@@ -146,7 +149,7 @@ const renderer = new WebGLRenderer({
 renderer.toneMapping = NoToneMapping;
 
 const scene = new Scene();
-const geometry = new PlaneGeometry(1, 1, 512, 128);
+const geometry = new PlaneGeometry(1, 0.1, 512, 4);
 
 const uniforms = {
 	viewportSize: {
@@ -163,6 +166,7 @@ const material = new ShaderMaterial({
 	vertexShader,
 	uniforms: uniforms,
 	transparent: true,
+	premultipliedAlpha: false,
 	depthTest: false,
 	depthWrite: false,
 	side: DoubleSide,
@@ -197,7 +201,6 @@ function draw() {
 
 
 window.addEventListener('DOMContentLoaded', () => {
-
 	document.body.appendChild(renderer.domElement);
 	window.addEventListener('resize', resize);
 	resize();
