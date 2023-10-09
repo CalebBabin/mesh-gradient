@@ -95,7 +95,7 @@ const fragmentShader = /*glsl*/`
 			(originalUv.x - distance(height, 0.0)) * totalAlpha,
 			(originalUv.y - distance(height, 0.0)) * totalAlpha,
 			(1.0 - (swirlOffset.x - 1.0) * 0.1) * totalAlpha,
-			pow(totalAlpha, 4.0)
+			0.0
 		), vec4(1.0), line);
 	}
 `;
