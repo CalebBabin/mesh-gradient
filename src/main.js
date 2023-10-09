@@ -92,8 +92,8 @@ const fragmentShader = /*glsl*/`
 		float totalAlpha = 1.0 - distance(originalUv.y, 0.5)*2.0;
 		
 		gl_FragColor = mix(vec4(
-			(vUv.x - distance(height, 0.0)) * totalAlpha,
-			(vUv.y - distance(height, 0.0)) * totalAlpha,
+			(originalUv.x - distance(height, 0.0)) * totalAlpha,
+			(originalUv.y - distance(height, 0.0)) * totalAlpha,
 			(1.0 - (swirlOffset.x - 1.0) * 0.1) * totalAlpha,
 			totalAlpha
 		), vec4(1.0), line);
