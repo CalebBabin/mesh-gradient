@@ -214,8 +214,9 @@ function resize() {
 }
 
 const timeOffset = (Math.random() * 2 - 1) * 100000;
+const timeMultiplier = location.search.includes('fast') ? 20 : 1;
 function draw() {
-	uniforms.uTime.value = performance.now() + timeOffset;
+	uniforms.uTime.value = performance.now() * timeMultiplier + timeOffset;
 
 	renderer.render(scene, camera);
 	window.requestAnimationFrame(draw);
