@@ -143,14 +143,14 @@ const vertexShader = /*glsl*/`
 		float offset = 0.0;
 		float slowTime = uTime / 30000.0;
 		offset += snoise(vec3(
-			vUv.x * 1.0,
+			vUv.x * 0.7,
 			vUv.y * 5.0 + slowTime * 0.25,
 			slowTime
 		));
 		//offset += snoise(vec3(vUv.x * 1.0 * 0.75 + slowTime, vUv.y * 1.0 * 2.0, slowTime * 2.0)) * 0.05;
 
 		swirlOffset = vec2(
-			snoise(vec3(vUv.x * 0.36, vUv.y * 0.8, slowTime * 0.3)),
+			snoise(vec3(vUv.x * 0.2, vUv.y * 3.0, slowTime * 0.3)),
 			snoise(vec3(vUv.x * 2.0, vUv.y * 2.0, slowTime * 0.5))
 		);
 	
