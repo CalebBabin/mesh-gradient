@@ -213,8 +213,9 @@ function resize() {
 	uniforms.viewportSize.value[1] = height * multiplier;
 }
 
+const timeOffset = (Math.random() * 2 - 1) * 100000;
 function draw() {
-	uniforms.uTime.value = performance.now();
+	uniforms.uTime.value = performance.now() + timeOffset;
 
 	renderer.render(scene, camera);
 	window.requestAnimationFrame(draw);
