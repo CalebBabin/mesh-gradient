@@ -143,7 +143,7 @@ const vertexShader = /*glsl*/`
 		float offset = 0.0;
 		float slowTime = uTime / 30000.0;
 		offset += snoise(vec3(
-			vUv.x * 0.7,
+			vUv.x * 1.0,
 			vUv.y * 5.0 + slowTime * 0.25,
 			slowTime
 		));
@@ -153,6 +153,9 @@ const vertexShader = /*glsl*/`
 			snoise(vec3(vUv.x * 0.2, vUv.y * 3.0, slowTime * 0.3)),
 			snoise(vec3(vUv.x * 2.0, vUv.y * 2.0, slowTime * 0.5))
 		);
+
+		// extra wavyness
+		offset -= (sin(uv.y * 250.0) + 1.0) * 0.5 * (pow(cos(vUv.y * 40.0 + slowTime * 0.2) * 0.5 + 0.5, 3.0) * pow(cos(vUv.x * 3.0 + vUv.y * 2.0 + slowTime * 0.3) * 0.5 + 0.5, 3.0));
 	
 		height = offset;
 		pos.z -= offset * 0.5;
