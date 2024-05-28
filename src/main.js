@@ -7,8 +7,9 @@ import {
 	ShaderMaterial,
 	WebGLRenderer,
 	NoToneMapping,
-	DoubleSide
+	FrontSide,
 } from 'three';
+import colorSpaceGLSL from './colorSpace.glsl?raw';
 
 
 const simplexNoiseShader = /*glsl*/`
@@ -81,22 +82,35 @@ const fragmentShader = /*glsl*/`
 	varying vec2 vUv;
 	varying vec2 originalUv;
 	varying float height;
-	uniform float uTime;
 	varying vec2 swirlOffset;
+	uniform float uTime;
 
+	${colorSpaceGLSL}
 	${simplexNoiseShader}
 
 	void main() {
-
-		float line = pow(1.0 - distance(vUv.y, 0.35) * 2.0, 20.0);
-		float totalAlpha = 1.0 - distance(originalUv.y, 0.5)*2.0;
-		
-		gl_FragColor = mix(vec4(
-			(originalUv.x - distance(height, 0.0)) * totalAlpha,
-			(originalUv.y - distance(height, 0.0)) * totalAlpha,
-			(1.0 - (swirlOffset.x - 1.0) * 0.1) * totalAlpha,
-			0.0
-		), vec4(1.0), line);
+		float normalizedHeight = height * 0.5 + 0.5;
+		float chroma = 1.0;
+		gl_FragColor = lch_to_rgb(
+			mix(
+				vec4(
+					normalizedHeight *0.5 + 0.5,
+					chroma,
+					normalizedHeight * 2.0 - 1.0 + uTime * 0.00002,
+					1.0
+				) * 100.0,
+				vec4(
+					1.0 - (normalizedHeight * 0.5),
+					chroma,
+					originalUv.y * 2.0 - 1.0 + uTime * 0.00001,
+					1.0
+				) * 100.0,
+				swirlOffset.x
+			)
+		);
+		// float multiplier = 0.25;
+		// float darken = (1.0 - height) * multiplier + (1.0 - multiplier);
+		// gl_FragColor = vec4(originalUv.x * darken, originalUv.y * darken, 1.0, 1.0);
 	}
 `;
 
@@ -118,39 +132,34 @@ const vertexShader = /*glsl*/`
 
 		float offset = 0.0;
 		float slowTime = uTime / 30000.0;
-		offset += snoise(vec3(vUv.x * 2.0 - slowTime, vUv.y * 2.0 * 2.0, slowTime * 2.5)) * 0.05;
-		offset += snoise(vec3(vUv.x * 1.0 + slowTime, vUv.y * 1.0 * 2.0, slowTime * 2.0)) * 0.05;
+		offset += snoise(vec3(
+			vUv.x * 1.0 - slowTime,
+			vUv.y * 5.0 + slowTime * 0.25,
+			slowTime
+		));
+		//offset += snoise(vec3(vUv.x * 1.0 * 0.75 + slowTime, vUv.y * 1.0 * 2.0, slowTime * 2.0)) * 0.05;
 
 		swirlOffset = vec2(
-			snoise(vec3(vUv.x * 6.0, vUv.y * 6.0, slowTime * 2.0)) * 3.14,
-			0.05//(pow((snoise(vec3(vUv.x, vUv.y, slowTime * 2.0)) * 0.5 + 0.5), 2.0) * 2.0 - 1.0) * 0.5
-			//snoise(vec3(vUv.x * 1.0, vUv.y * 1.0, slowTime * 2.0)) * 0.25
-			//snoise(vec3(vUv.x, vUv.y, slowTime * 2.0)) * 2.0
+			snoise(vec3(vUv.x, vUv.y, slowTime * 2.0)),
+			snoise(vec3(vUv.x * 2.0, vUv.y * 2.0, slowTime * 0.5))
 		);
-
-		height = offset / 0.1;
 	
-		pos.y += offset;
+		height = offset;
+		pos.z -= offset * 0.5;
 
 		gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
 	}
 `;
 
 
-
-
-
-
-
 const renderer = new WebGLRenderer({
 	antialias: true,
-	premultipliedAlpha: true
 });
 
 renderer.toneMapping = NoToneMapping;
 
 const scene = new Scene();
-const geometry = new PlaneGeometry(1, 0.15, 512, 5);
+const geometry = new PlaneGeometry(2.5, 5, 512, 512);
 
 const uniforms = {
 	viewportSize: {
@@ -166,18 +175,17 @@ const material = new ShaderMaterial({
 	fragmentShader,
 	vertexShader,
 	uniforms: uniforms,
-	transparent: true,
-	premultipliedAlpha: true,
 	depthTest: false,
 	depthWrite: false,
-	side: DoubleSide,
+	side: FrontSide,
 });
 
 
 const mesh = new Mesh(geometry, material);
-mesh.scale.set(2, 3.5, 1);
-mesh.rotation.x = Math.PI * 0.75;
-//mesh.rotation.y = Math.PI / 4;
+mesh.scale.set(1, 1, 1);
+mesh.rotation.x = Math.PI * 0.25 + Math.PI;
+// mesh.rotation.y = -Math.PI;
+// mesh.rotation.z = -Math.PI / 4;
 scene.add(mesh);
 
 const camera = new OrthographicCamera(-1, 1, -1, 1, 0, 100);
@@ -187,15 +195,13 @@ function resize() {
 	const width = document.body.clientWidth;
 	const height = document.body.clientHeight;
 	renderer.setSize(width, height);
-	let multiplier = 0.001;
-	multiplier /= Math.max(1, Math.max(width, height) / 1400);
+	const multiplier = 0.001;
 	uniforms.viewportSize.value[0] = width * multiplier;
 	uniforms.viewportSize.value[1] = height * multiplier;
 }
 
-const timeOffset = Math.random() * 600000;
 function draw() {
-	uniforms.uTime.value = performance.now() + timeOffset;
+	uniforms.uTime.value = performance.now();
 
 	renderer.render(scene, camera);
 	window.requestAnimationFrame(draw);

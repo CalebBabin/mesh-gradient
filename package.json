@@ -1,5 +1,5 @@
 {
-	"name": "intro-example-threejs",
+	"name": "mesh-gradient",
 	"private": false,
 	"version": "0.0.0",
 	"type": "module",
@@ -10,9 +10,9 @@
 		"preview": "vite preview"
 	},
 	"devDependencies": {
-		"vite": "^4.4.9"
+		"vite": "^5.2.12"
 	},
 	"dependencies": {
-		"three": "^0.156.1"
+		"three": "^0.164.1"
 	}
 }
