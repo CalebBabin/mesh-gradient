@@ -93,9 +93,9 @@ const fragmentShader = /*glsl*/`
 		float chroma = 1.0;
 		gl_FragColor = lch_to_rgb(
 			vec4(
-				1.0 - (normalizedHeight * 0.5),
+				0.8 + (normalizedHeight * 0.2),
 				chroma,
-				(vUv.y * 2.0 - 1.0) + uTime * 0.0001,
+				swirlOffset.x,
 				1.0
 			) * 100.0
 		);
@@ -150,7 +150,7 @@ const vertexShader = /*glsl*/`
 		//offset += snoise(vec3(vUv.x * 1.0 * 0.75 + slowTime, vUv.y * 1.0 * 2.0, slowTime * 2.0)) * 0.05;
 
 		swirlOffset = vec2(
-			snoise(vec3(vUv.x, vUv.y, slowTime * 2.0)),
+			snoise(vec3(vUv.x * 0.36, vUv.y * 0.8, slowTime * 0.3)),
 			snoise(vec3(vUv.x * 2.0, vUv.y * 2.0, slowTime * 0.5))
 		);
 	
