@@ -135,7 +135,7 @@ const vertexShader = /*glsl*/`
 	${simplexNoiseShader}
 
 	void main() {
-		vUv = vec2(uv.x * viewportSize.x, uv.y * viewportSize.y);
+		vUv = vec2(uv.x * (viewportSize.x/viewportSize.y), uv.y);
 		originalUv = vec2(uv.x, uv.y);
 
 		vec3 pos = position;
@@ -208,9 +208,8 @@ function resize() {
 	const width = document.body.clientWidth;
 	const height = document.body.clientHeight;
 	renderer.setSize(width, height);
-	const multiplier = 0.001;
-	uniforms.viewportSize.value[0] = width * multiplier;
-	uniforms.viewportSize.value[1] = height * multiplier;
+	uniforms.viewportSize.value[0] = width;
+	uniforms.viewportSize.value[1] = height;
 }
 
 const timeOffset = (Math.random() * 2 - 1) * 100000;
