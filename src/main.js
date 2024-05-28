@@ -92,22 +92,32 @@ const fragmentShader = /*glsl*/`
 		float normalizedHeight = height * 0.5 + 0.5;
 		float chroma = 1.0;
 		gl_FragColor = lch_to_rgb(
-			mix(
-				vec4(
-					normalizedHeight *0.5 + 0.5,
-					chroma,
-					normalizedHeight * 2.0 - 1.0 + uTime * 0.00002,
-					1.0
-				) * 100.0,
-				vec4(
-					1.0 - (normalizedHeight * 0.5),
-					chroma,
-					originalUv.y * 2.0 - 1.0 + uTime * 0.00001,
-					1.0
-				) * 100.0,
-				swirlOffset.x
-			)
+			vec4(
+				1.0 - (normalizedHeight * 0.5),
+				chroma,
+				(vUv.y * 2.0 - 1.0) + uTime * 0.0001,
+				1.0
+			) * 100.0
 		);
+		
+		// gl_FragColor = lch_to_rgb(
+		// 	mix(
+		// 		vec4(
+		// 			normalizedHeight *0.5 + 0.5,
+		// 			chroma,
+		// 			normalizedHeight * 2.0 - 1.0 + uTime * 0.00002,
+		// 			1.0
+		// 		) * 100.0,
+		// 		vec4(
+		// 			1.0 - (normalizedHeight * 0.5),
+		// 			chroma,
+		// 			originalUv.y * 2.0 - 1.0 + uTime * 0.00001,
+		// 			1.0
+		// 		) * 100.0,
+		// 		swirlOffset.x
+		// 	)
+		// );
+
 		// float multiplier = 0.25;
 		// float darken = (1.0 - height) * multiplier + (1.0 - multiplier);
 		// gl_FragColor = vec4(originalUv.x * darken, originalUv.y * darken, 1.0, 1.0);
@@ -133,7 +143,7 @@ const vertexShader = /*glsl*/`
 		float offset = 0.0;
 		float slowTime = uTime / 30000.0;
 		offset += snoise(vec3(
-			vUv.x * 1.0 - slowTime,
+			vUv.x * 1.0,
 			vUv.y * 5.0 + slowTime * 0.25,
 			slowTime
 		));
