@@ -93,9 +93,9 @@ const fragmentShader = /*glsl*/`
 		float chroma = 1.0;
 		gl_FragColor = lch_to_rgb(
 			vec4(
-				0.8 + (normalizedHeight * 0.2),
+				0.6 + (normalizedHeight * 0.2),
 				chroma,
-				swirlOffset.x,
+				swirlOffset.x + uTime * 0.00001,
 				1.0
 			) * 100.0
 		);
