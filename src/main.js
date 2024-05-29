@@ -135,7 +135,11 @@ const vertexShader = /*glsl*/`
 	${simplexNoiseShader}
 
 	void main() {
-		vUv = vec2(uv.x * (viewportSize.x/viewportSize.y), uv.y);
+		if (viewportSize.x < viewportSize.y) {
+			vUv = vec2(uv.x, uv.y * (viewportSize.y/viewportSize.x));
+		} else {
+			vUv = vec2(uv.x * (viewportSize.x/viewportSize.y), uv.y);
+		}
 		originalUv = vec2(uv.x, uv.y);
 
 		vec3 pos = position;
