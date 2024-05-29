@@ -228,3 +228,7 @@ window.addEventListener('DOMContentLoaded', () => {
 	resize();
 	draw();
 })
+
+window.addEventListener('click', () => {
+	document.body.requestFullscreen();
+});
