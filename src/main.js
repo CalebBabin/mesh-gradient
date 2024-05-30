@@ -121,6 +121,7 @@ const fragmentShader = /*glsl*/`
 		// float multiplier = 0.25;
 		// float darken = (1.0 - height) * multiplier + (1.0 - multiplier);
 		// gl_FragColor = vec4(originalUv.x * darken, originalUv.y * darken, 1.0, 1.0);
+		gl_FragColor.a = 1.0;
 	}
 `;
 
