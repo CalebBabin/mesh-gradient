@@ -231,8 +231,31 @@ window.addEventListener('DOMContentLoaded', () => {
 	window.addEventListener('resize', resize);
 	resize();
 	draw();
-})
 
-window.addEventListener('click', () => {
-	document.body.requestFullscreen();
-});
+	const fullscreenButton = document.getElementById('fullscreenButton');
+	fullscreenButton.addEventListener('click', () => {
+		if (document.fullscreenElement) {
+			document.exitFullscreen();
+			return;
+		} else {
+			document.body.requestFullscreen();
+		}
+	});
+
+	const timeoutDuration = 1000;
+	let buttonTimeout = Date.now() - timeoutDuration;
+	const showButton = () => {
+		fullscreenButton.style.opacity = 1;
+		buttonTimeout = Date.now();
+	}
+	window.addEventListener('mousemove', showButton);
+	window.addEventListener('touchstart', showButton);
+	window.addEventListener('click', showButton);
+	window.addEventListener('keydown', showButton);
+
+	setInterval(() => {
+		if (Date.now() - buttonTimeout > timeoutDuration) {
+			fullscreenButton.style.opacity = 0;
+		}
+	}, timeoutDuration / 2);
+})
