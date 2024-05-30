@@ -21,7 +21,8 @@ canvas {
 
 	color: white;
 	font-family: sans-serif;
-	font-size: 2vmin;
+	font-size: 16px;
+	font-size: calc(clamp(16px, 5vmin, 26px));
 
 	transition: opacity 0.5s ease;
 }
