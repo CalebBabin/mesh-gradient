@@ -99,7 +99,15 @@ const fragmentShader = /*glsl*/`
 				1.0
 			) * 100.0
 		);
-		
+
+		// float stripeCount = 60.0;
+		// if (mod(floor((vUv.y + vUv.x / 5.0 + uTime*0.00001) * stripeCount), 2.0) == 0.0) {
+		// 	gl_FragColor *= pow(
+		// 		1.0 - sin((vUv.y + vUv.x / 5.0 + uTime*0.00001) * stripeCount * 3.14159265359),
+		// 		1.5
+		// 	);
+		// }
+
 		// gl_FragColor = lch_to_rgb(
 		// 	mix(
 		// 		vec4(
