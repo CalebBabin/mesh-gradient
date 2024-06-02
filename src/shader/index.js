@@ -126,8 +126,9 @@ function generateMaterial(options = {}) {
         transparent: true,
     });
 
+    const timeOffset = Math.random() * -10000000;
     const tick = () => {
-        uniforms.uTime.value = performance.now();
+        uniforms.uTime.value = performance.now() + timeOffset;
     }
 
     return { material, uniforms, tick };
