@@ -9,7 +9,7 @@ import {
 	NoToneMapping,
 	FrontSide,
 } from 'three';
-import GLSL_colorSpaces from './colorSpace.glsl?raw';
+import GLSL_colorSpaces from './colorSpaces.glsl?raw';
 
 import GLSL_simplexNoise3D from './noise/simplex.glsl?raw';
 
