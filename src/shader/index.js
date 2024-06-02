@@ -1,14 +1,4 @@
-import './style.css';
-import {
-	Mesh,
-	OrthographicCamera,
-	PlaneGeometry,
-	Scene,
-	ShaderMaterial,
-	WebGLRenderer,
-	NoToneMapping,
-	FrontSide,
-} from 'three';
+import { FrontSide, ShaderMaterial } from 'three';
 import GLSL_colorSpaces from './colorSpaces.glsl?raw';
 
 import GLSL_simplexNoise3D from './noise/simplex.glsl?raw';
@@ -113,95 +103,35 @@ const vertexShader = /*glsl*/`
 `;
 
 
-const renderer = new WebGLRenderer({
-	antialias: true,
-	alpha: false,
-});
-
-renderer.toneMapping = NoToneMapping;
-
-const scene = new Scene();
-const geometry = new PlaneGeometry(2.5, 5, 512, 512);
-
-const uniforms = {
-	viewportSize: {
-		value: [1.0, 1.0]
-	},
-	uTime: {
-		value: performance.now(),
-	}
-};
 
 
-const material = new ShaderMaterial({
-	fragmentShader,
-	vertexShader,
-	uniforms: uniforms,
-	side: FrontSide,
-	depthTest: true,
-	depthWrite: true,
-	transparent: true,
-});
 
+function generateMaterial(options = {}) {
+    const uniforms = {
+        viewportSize: {
+            value: [1.0, 1.0]
+        },
+        uTime: {
+            value: performance.now(),
+        }
+    };
 
-const mesh = new Mesh(geometry, material);
-mesh.scale.set(1, 1, 1);
-mesh.rotation.x = Math.PI * 0.25 + Math.PI;
-// mesh.rotation.y = -Math.PI;
-// mesh.rotation.z = -Math.PI / 4;
-scene.add(mesh);
+    const material = new ShaderMaterial({
+        fragmentShader,
+        vertexShader,
+        uniforms: uniforms,
+        side: FrontSide,
+        depthTest: true,
+        depthWrite: true,
+        transparent: true,
+    });
 
-const camera = new OrthographicCamera(-1, 1, -1, 1, 0, 100);
-camera.position.z = 50;
+    const tick = () => {
+        uniforms.uTime.value = performance.now();
+    }
 
-function resize() {
-	const width = document.body.clientWidth;
-	const height = document.body.clientHeight;
-	renderer.setSize(width, height);
-	uniforms.viewportSize.value[0] = width;
-	uniforms.viewportSize.value[1] = height;
-}
-
-const timeOffset = (Math.random() * 2 - 1) * 100000;
-const timeMultiplier = location.search.includes('fast') ? 20 : 1;
-function draw() {
-	uniforms.uTime.value = performance.now() * timeMultiplier + timeOffset;
-
-	renderer.render(scene, camera);
-	window.requestAnimationFrame(draw);
+    return { material, uniforms, tick };
 }
 
 
-window.addEventListener('DOMContentLoaded', () => {
-	document.body.appendChild(renderer.domElement);
-	window.addEventListener('resize', resize);
-	resize();
-	draw();
-
-	const fullscreenButton = document.getElementById('fullscreenButton');
-	fullscreenButton.addEventListener('click', () => {
-		if (document.fullscreenElement) {
-			document.exitFullscreen();
-			return;
-		} else {
-			document.body.requestFullscreen();
-		}
-	});
-
-	const timeoutDuration = 1000;
-	let buttonTimeout = Date.now() - timeoutDuration;
-	const showButton = () => {
-		fullscreenButton.style.opacity = 1;
-		buttonTimeout = Date.now();
-	}
-	window.addEventListener('mousemove', showButton);
-	window.addEventListener('touchstart', showButton);
-	window.addEventListener('click', showButton);
-	window.addEventListener('keydown', showButton);
-
-	setInterval(() => {
-		if (Date.now() - buttonTimeout > timeoutDuration) {
-			fullscreenButton.style.opacity = 0;
-		}
-	}, timeoutDuration / 2);
-})
+export { generateMaterial }
