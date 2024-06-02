@@ -137,9 +137,10 @@ const material = new ShaderMaterial({
 	fragmentShader,
 	vertexShader,
 	uniforms: uniforms,
-	depthTest: false,
-	depthWrite: false,
 	side: FrontSide,
+	depthTest: true,
+	depthWrite: true,
+	transparent: true,
 });
 
 
