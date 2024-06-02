@@ -115,6 +115,7 @@ const vertexShader = /*glsl*/`
 
 const renderer = new WebGLRenderer({
 	antialias: true,
+	alpha: false,
 });
 
 renderer.toneMapping = NoToneMapping;
