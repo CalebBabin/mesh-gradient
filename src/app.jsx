@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 
 function FullscreenButton({ hide = false }) {
@@ -26,13 +26,215 @@ function FullscreenButton({ hide = false }) {
         }}>
         {isFullscreen ? 'exit fullscreen' : 'fullscreen'}
     </button>
+}
 
+function NumberInput({ value, onChange }) {
+    return <input
+        className='w-10'
+        type='number'
+        value={value}
+        onChange={onChange}
+    />;
+}
+function NumberWrapper({ children }) {
+    return <div
+        className='pl-1 rounded border-black border-solid border overflow-hidden'
+    >
+        {children}
+    </div>
+}
+
+
+function XYZInput({ data, setData }) {
+    return <>
+        <NumberWrapper>
+            <label>X: <NumberInput value={data.x} onChange={e => {
+                const new_data = { ...data };
+                new_data.x = e.target.value;
+                setData(new_data);
+            }} /></label>
+        </NumberWrapper>
+        <NumberWrapper>
+            <label>Y: <NumberInput value={data.y} onChange={e => {
+                const new_data = { ...data };
+                new_data.y = e.target.value;
+                setData(new_data);
+            }} /></label>
+        </NumberWrapper>
+        <NumberWrapper>
+            <label>Z: <NumberInput value={data.z} onChange={e => {
+                const new_data = { ...data };
+                new_data.z = e.target.value;
+                setData(new_data);
+            }} /></label>
+        </NumberWrapper>
+    </>
+}
+
+function VertexConfig({ data, setData }) {
+    return <div className='flex flex-wrap items-center gap-2 p-2 pt-1 border-[2px] rounded box-content'>
+        <input type='text' value={vertexDictionary[data.name].name} readOnly />
+        <label>
+            scale:
+            <input type='number' value={data.scale.y} onChange={e => {
+                const new_data = { ...data };
+                new_data.scale.y = e.target.value;
+                setData(new_data);
+            }} />
+        </label>
+        <div className='flex gap-2'>
+            detail:
+            <XYZInput data={data.detail} setData={detailData => {
+                const new_data = { ...data };
+                new_data.detail = detailData;
+                setData(new_data);
+            }} />
+        </div>
+        <label className='flex justify-between w-full'>
+            speed: <input type='range'
+                min={-20}
+                max={20}
+                step={0.01}
+                value={data.speed} onChange={e => {
+                    const new_data = { ...data };
+                    new_data.speed = e.target.value;
+                    setData(new_data);
+                }} />
+            <input className='w-12' type='number' value={data.speed} onChange={e => {
+                const new_data = { ...data };
+                new_data.speed = e.target.value;
+                setData(new_data);
+            }} />
+        </label>
+    </div>
+}
+
+function Controls({ hide = false, locked = false, setLockUI }) {
+    const [vertexConfig, setVertexConfig] = useState(undefined);
+    const [vertexDictionary, setVertexDictionary] = useState(null);
+
+    const ref = useRef(null);
+    useMemo(() => {
+        if (ref.current) {
+            const focusListener = () => {
+                setLockUI(true);
+            }
+            ref.current.addEventListener('focusin', focusListener);
+            ref.current.addEventListener('click', focusListener);
+            return () => {
+                ref.current.removeEventListener('focusin', focusListener);
+                ref.current.removeEventListener('click', focusListener);
+            }
+        }
+    }, [ref.current]);
+
+    useMemo(() => {
+        if (window.vertexConfig !== undefined) {
+            setVertexConfig(window.vertexConfig);
+            setVertexDictionary(window.vertexDictionary);
+        } else {
+            const listener = () => {
+                setVertexConfig(window.vertexConfig);
+                setVertexDictionary(window.vertexDictionary);
+            }
+            window.addEventListener('vertexConfigLoaded', listener);
+
+            return () => {
+                window.removeEventListener('vertexConfigLoaded', listener);
+            }
+        }
+    }, []);
+
+    useMemo(() => {
+        window.dispatchEvent(new CustomEvent('rebuildTheShader', {
+            detail: {
+                config: vertexConfig
+            }
+        }));
+    }, [vertexConfig])
+
+    const vertexElements = [];
+    for (let i = 0; i < vertexConfig?.length || 0; i++) {
+        const conf = vertexConfig[i];
+        vertexElements.push(
+            <VertexConfig
+                key={i}
+                data={conf}
+                setData={(new_data) => {
+                    const new_config = [...vertexConfig];
+                    new_config[i] = new_data;
+                    setVertexConfig(new_config);
+                }}
+            />
+        );
+    }
+
+    return <div
+        ref={ref}
+        className='absolute bottom-2 left-2 w-[calc(100vw-1em)] max-w-xs'
+    >
+        <div
+            style={{ opacity: hide ? 0 : 1 }}
+            className='transition-opacity duration-500 w-full flex justify-between'>
+            <button
+                className='hover:text-blue-800 px-2 mb-2 bg-white/50 text-black border-2 rounded-md'
+                onClick={() => {
+                    const output = [];
+                    const count = Math.floor(Math.random() * 7) + 4;
+
+                    const r = () => Math.pow(Math.random(), 2) * 2 - 1;
+                    let smoothCount = 0;
+                    for (let i = 0; i < count; i++) {
+                        const scaleFactor = Math.random();
+                        const item = {
+                            name: Object.keys(vertexDictionary)[Math.floor(Math.random() * Object.keys(vertexDictionary).length)],
+                            scale: { 
+                                x: Math.pow(scaleFactor, 3) * 2, 
+                                y: Math.pow(scaleFactor * (Math.random()*0.5 + 0.6), 3) * 2, 
+                                z: r() 
+                            },
+                            detail: {
+                                x: Math.pow(Math.random(), 2) * 10,
+                                y: Math.pow(Math.random(), 2) * 5 + 0.2,
+                                z: r() * 2
+                            },
+                            speed: r(),
+                        }
+                        item.detail.x *= scaleFactor;
+                        item.detail.y *= scaleFactor;
+                        item.detail.z *= scaleFactor;
+
+                        if (item.name === 'presetSmoothingNoiseA') {
+                            if (smoothCount > 1) continue;
+                            smoothCount++;
+                        }
+                        output.push(item);
+                    }
+                    setVertexConfig(output);
+                }}>
+                randomize
+            </button>
+            {locked ?
+                <button
+                    className='hover:text-blue-800 px-2 mb-2 bg-white/50 text-black border-2 rounded-md'
+                    onClick={() => setLockUI(!locked)}>
+                    close controls
+                </button> : null}
+        </div>
+        <div
+            style={{ opacity: hide ? 0 : locked ? 1 : 0.5 }}
+            className='transition-opacity duration-500 p-2 h-full overflow-y-scroll bg-white text-black rounded-md w-full h-[50vh] flex gap-2 flex-col'>
+            Controls
+            {vertexElements}
+        </div>
+    </div>;
 }
 
 function App() {
     const [hideUI, setHideUI] = useState(false);
+    const [lockUI, setLockUI] = useState(true);
 
-    useMemo(()=>{
+    useMemo(() => {
         if (hideUI) document.body.style.cursor = 'none';
         else document.body.style.cursor = '';
     }, [hideUI]);
@@ -46,14 +248,23 @@ function App() {
             }, 1000);
         };
         document.addEventListener('pointermove', onInteraction);
+
+        const blurListener = () => {
+            setLockUI(false);
+            setHideUI(true);
+        }
+        window.addEventListener('blur', blurListener);
         return () => {
             document.removeEventListener('pointermove', onInteraction);
+            window.removeEventListener('blur', blurListener);
         };
     }, []);
 
+    const visible = lockUI || !hideUI;
     return (
         <>
-            <FullscreenButton hide={hideUI} />
+            <FullscreenButton hide={!visible} locked={lockUI} />
+            <Controls hide={!visible} locked={lockUI} setLockUI={setLockUI} />
         </>
     )
 }
