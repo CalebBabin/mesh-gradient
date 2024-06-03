@@ -56,7 +56,7 @@ function triggerRebuild(vertexConfig = {}, fragmentConfig = {}) {
 	scene.add(mesh);
 	resize();
 }
-triggerRebuild(window.config.vertex, window.config.fragment);
+// triggerRebuild(window.config.vertex, window.config.fragment);
 
 let rebuildTimeout = 0;
 const rebuildListener = (e) => {
@@ -77,12 +77,13 @@ function resize() {
 	const width = document.body.clientWidth;
 	const height = document.body.clientHeight;
 	renderer.setSize(width, height);
+	if (!mat) return;
 	mat.uniforms.viewportSize.value[0] = width;
 	mat.uniforms.viewportSize.value[1] = height;
 }
 
 function draw() {
-	mat.tick();
+	if (mat) mat.tick();
 	renderer.render(scene, camera);
 	window.requestAnimationFrame(draw);
 }
