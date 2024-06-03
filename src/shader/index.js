@@ -4,60 +4,6 @@ import GLSL_colorSpaces from './colorSpaces.glsl?raw';
 import GLSL_simplexNoise3D from './noise/simplex.glsl?raw';
 const timeOffset = Math.random() * -10000000;
 
-const fragmentShader = /*glsl*/`
-	precision highp float;
-	varying vec2 vUv;
-	varying vec2 originalUv;
-	varying float vHeight;
-	varying vec2 vertexNoise;
-	uniform float uTime;
-
-	${GLSL_colorSpaces}
-
-	void main() {
-		float chroma = 0.75;
-		gl_FragColor = lch_to_rgb(
-			vec4(
-				distance(vHeight, 1.0) * 0.5,
-				chroma,
-				vertexNoise.x + uTime * 0.00001,
-				1.0
-			) * 100.0
-		);
-
-		// float stripeCount = 60.0;
-		// if (mod(floor((vUv.y + vUv.x / 5.0 + uTime*0.00001) * stripeCount), 2.0) == 0.0) {
-		// 	gl_FragColor *= pow(
-		// 		1.0 - sin((vUv.y + vUv.x / 5.0 + uTime*0.00001) * stripeCount * 3.14159265359),
-		// 		1.5
-		// 	);
-		// }
-
-		// gl_FragColor = lch_to_rgb(
-		// 	mix(
-		// 		vec4(
-		// 			normalizedvHeight *0.5 + 0.5,
-		// 			chroma,
-		// 			normalizedvHeight * 2.0 - 1.0 + uTime * 0.00002,
-		// 			1.0
-		// 		) * 100.0,
-		// 		vec4(
-		// 			1.0 - (normalizedvHeight * 0.5),
-		// 			chroma,
-		// 			originalUv.y * 2.0 - 1.0 + uTime * 0.00001,
-		// 			1.0
-		// 		) * 100.0,
-		// 		vertexNoise.x
-		// 	)
-		// );
-
-		// float multiplier = 0.25;
-		// float darken = (1.0 - vHeight) * multiplier + (1.0 - multiplier);
-		// gl_FragColor = vec4(originalUv.x * darken, originalUv.y * darken, 1.0, 1.0);
-		gl_FragColor.a = 1.0;
-	}
-`;
-
 const vertexDictionary = {
     presetBigNoiseA: {
         name: 'Wave Noise',
@@ -118,11 +64,66 @@ function trailZero(num) {
     return String(num);
 }
 
-export function generateMaterial(options = {}) {
+export function generateMaterial(vertexConfig, fragmentConfig) {
+
+    const fragmentShader = /*glsl*/`
+    precision highp float;
+    varying vec2 vUv;
+    varying vec2 originalUv;
+    varying float vHeight;
+    varying vec2 vertexNoise;
+    uniform float uTime;
+
+    ${GLSL_colorSpaces}
+
+    void main() {
+        float chroma = 0.75;
+        gl_FragColor = lch_to_rgb(
+            vec4(
+                distance(vHeight, ${trailZero(fragmentConfig.brightnessHeightTarget)}) * ${trailZero(fragmentConfig.brightnessHeightMultiplier)},
+                chroma,
+                vertexNoise.x + uTime * 0.00001,
+                1.0
+            ) * 100.0
+        );
+
+        // float stripeCount = 60.0;
+        // if (mod(floor((vUv.y + vUv.x / 5.0 + uTime*0.00001) * stripeCount), 2.0) == 0.0) {
+        // 	gl_FragColor *= pow(
+        // 		1.0 - sin((vUv.y + vUv.x / 5.0 + uTime*0.00001) * stripeCount * 3.14159265359),
+        // 		1.5
+        // 	);
+        // }
+
+        // gl_FragColor = lch_to_rgb(
+        // 	mix(
+        // 		vec4(
+        // 			normalizedvHeight *0.5 + 0.5,
+        // 			chroma,
+        // 			normalizedvHeight * 2.0 - 1.0 + uTime * 0.00002,
+        // 			1.0
+        // 		) * 100.0,
+        // 		vec4(
+        // 			1.0 - (normalizedvHeight * 0.5),
+        // 			chroma,
+        // 			originalUv.y * 2.0 - 1.0 + uTime * 0.00001,
+        // 			1.0
+        // 		) * 100.0,
+        // 		vertexNoise.x
+        // 	)
+        // );
+
+        // float multiplier = 0.25;
+        // float darken = (1.0 - vHeight) * multiplier + (1.0 - multiplier);
+        // gl_FragColor = vec4(originalUv.x * darken, originalUv.y * darken, 1.0, 1.0);
+        gl_FragColor.a = 1.0;
+    }
+    `;
 
     let vertexConfigOutput = '';
-    for (let i = 0; i < options.vertexConfig.length; i++) {
-        const conf = options.vertexConfig[i];
+    const vertexNodes = vertexConfig.nodes || [];
+    for (let i = 0; i < vertexNodes.length; i++) {
+        const conf = vertexNodes[i];
         const preset = vertexDictionary[conf.name];
 
         if (typeof conf.scale === 'number') {

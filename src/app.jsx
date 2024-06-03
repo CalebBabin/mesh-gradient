@@ -110,7 +110,7 @@ function VertexConfig({ data, setData }) {
 }
 
 function Controls({ hide = false, locked = false, setLockUI }) {
-    const [vertexConfig, setVertexConfig] = useState(undefined);
+    const [config, setConfig] = useState(undefined);
     const [vertexDictionary, setVertexDictionary] = useState(null);
 
     const ref = useRef(null);
@@ -129,12 +129,12 @@ function Controls({ hide = false, locked = false, setLockUI }) {
     }, [ref.current]);
 
     useMemo(() => {
-        if (window.vertexConfig !== undefined) {
-            setVertexConfig(window.vertexConfig);
+        if (window.config !== undefined) {
+            setConfig(window.config);
             setVertexDictionary(window.vertexDictionary);
         } else {
             const listener = () => {
-                setVertexConfig(window.vertexConfig);
+                setConfig(window.config);
                 setVertexDictionary(window.vertexDictionary);
             }
             window.addEventListener('vertexConfigLoaded', listener);
@@ -148,25 +148,27 @@ function Controls({ hide = false, locked = false, setLockUI }) {
     useMemo(() => {
         window.dispatchEvent(new CustomEvent('rebuildTheShader', {
             detail: {
-                config: vertexConfig
+                config,
             }
         }));
-    }, [vertexConfig])
+    }, [config])
 
     const vertexElements = [];
-    for (let i = 0; i < vertexConfig?.length || 0; i++) {
-        const conf = vertexConfig[i];
-        vertexElements.push(
-            <VertexConfig
-                key={i}
-                data={conf}
-                setData={(new_data) => {
-                    const new_config = [...vertexConfig];
-                    new_config[i] = new_data;
-                    setVertexConfig(new_config);
-                }}
-            />
-        );
+    if (config) {
+        for (let i = 0; i < config.vertex.nodes.length || 0; i++) {
+            const conf = config.vertex.nodes[i];
+            vertexElements.push(
+                <VertexConfig
+                    key={i}
+                    data={conf}
+                    setData={(new_data) => {
+                        const new_config = [...vertexConfig];
+                        new_config[i] = new_data;
+                        setConfig(new_config);
+                    }}
+                />
+            );
+        }
     }
 
     return <div
@@ -210,7 +212,12 @@ function Controls({ hide = false, locked = false, setLockUI }) {
                         }
                         output.push(item);
                     }
-                    setVertexConfig(output);
+                    setConfig({
+                        vertex: {
+                            nodes: output,
+                        },
+                        fragment: config.fragment,
+                    });
                 }}>
                 randomize
             </button>
@@ -225,8 +232,34 @@ function Controls({ hide = false, locked = false, setLockUI }) {
             style={{ opacity: hide ? 0 : locked ? 1 : 0.5 }}
             className='transition-opacity duration-500 p-2 overflow-y-scroll bg-white text-black rounded-md h-[50vh] flex gap-2 flex-col'>
             <h2 className='text-xl'>Controls</h2>
-            <div className='flex flex-wrap items-center gap-2 p-2 pt-1 border-[2px] rounded box-content'>
-                
+            <div className='flex flex-col gap-2 p-2 pt-1 border-[2px] rounded box-content'>
+                <h2 className='text-xl'>Color:</h2>
+                <label>
+                    height target:
+                    <input className='inline-block w-12' type='number' value={config?.fragment.brightnessHeightTarget} onChange={e => {
+                        const new_config = { ...config };
+                        new_config.fragment.brightnessHeightTarget = e.target.value;
+                        setConfig(new_config);
+                    }} />
+                    <input className='w-full' type="range" min={-2} max={2} step={0.01} value={config?.fragment.brightnessHeightTarget} onChange={e => {
+                        const new_config = { ...config };
+                        new_config.fragment.brightnessHeightTarget = e.target.value;
+                        setConfig(new_config);
+                    }} />
+                </label>
+                <label>
+                    height multiplier:
+                    <input className='inline-block w-12' type='number' value={config?.fragment.brightnessHeightMultiplier} onChange={e => {
+                        const new_config = { ...config };
+                        new_config.fragment.brightnessHeightMultiplier = e.target.value;
+                        setConfig(new_config);
+                    }} />
+                    <input className='w-full' type="range" min={0} max={2} step={0.01} value={config?.fragment.brightnessHeightMultiplier} onChange={e => {
+                        const new_config = { ...config };
+                        new_config.fragment.brightnessHeightMultiplier = e.target.value;
+                        setConfig(new_config);
+                    }} />
+                </label>
             </div>
             <hr />
             <h2 className='text-xl'>Position:</h2>
