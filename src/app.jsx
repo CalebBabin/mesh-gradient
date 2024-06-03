@@ -223,7 +223,7 @@ function Controls({ hide = false, locked = false, setLockUI }) {
         </div>
         <div
             style={{ opacity: hide ? 0 : locked ? 1 : 0.5 }}
-            className='transition-opacity duration-500 p-2 h-full overflow-y-scroll bg-white text-black rounded-md h-[50vh] flex gap-2 flex-col'>
+            className='transition-opacity duration-500 p-2 overflow-y-scroll bg-white text-black rounded-md h-[50vh] flex gap-2 flex-col'>
             Controls
             {vertexElements}
         </div>
