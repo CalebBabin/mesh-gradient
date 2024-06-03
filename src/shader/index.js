@@ -16,7 +16,7 @@ const fragmentShader = /*glsl*/`
 
 	void main() {
 		float normalizedHeight = height * 0.5 + 0.5;
-		float chroma = 1.0;
+		float chroma = 0.75;
 		gl_FragColor = lch_to_rgb(
 			vec4(
 				0.6 + (normalizedHeight * 0.2),
