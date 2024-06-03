@@ -270,7 +270,7 @@ function Controls({ hide = false, locked = false, setLockUI }) {
 
 function App() {
     const [hideUI, setHideUI] = useState(false);
-    const [lockUI, setLockUI] = useState(true);
+    const [lockUI, setLockUI] = useState(false);
 
     useMemo(() => {
         if (hideUI) document.body.style.cursor = 'none';
