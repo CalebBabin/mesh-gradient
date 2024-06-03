@@ -25,8 +25,8 @@ window.config.vertex = {
 };
 
 window.config.fragment = {
-	brightnessHeightTarget: 0.5,
-	brightnessHeightMultiplier: 0.5,
+	brightnessHeightTarget: 3,
+	brightnessHeightMultiplier: 0.22,
 }
 
 window.dispatchEvent(new CustomEvent('vertexConfigLoaded'));
