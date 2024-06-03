@@ -1,5 +1,13 @@
 # 3D Mesh Gradient Experiments
 
+[https://mesh-gradient.opl.io/](https://mesh-gradient.opl.io/)
+
+An attempt to recreate the style of abstract imagery commonly used by tech companies as default device backgrounds, but inside of a WebGL shader!
+
+![](public/gradient_example_01.png)
+![](public/gradient_example_02.png)
+![](public/gradient_example_03.png)
+
 
 
 # Development
@@ -16,5 +24,3 @@ After running `dev`, open [localhost:5173](http://localhost:5173/). The page sho
 npm run build
 ```
 Outputs static files to `/dist/`.
-
-Services like [Netlify](https://www.netlify.com/) have free tiers that can easily deploy simple static webpages like this.
