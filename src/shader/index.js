@@ -125,14 +125,12 @@ export function generateMaterial(options = {}) {
         if (typeof conf.scale === 'number') {
             conf.scale = { x: conf.scale, y: conf.scale, z: conf.scale };
         }
+        vertexConfigOutput += '\n{\n';
         vertexConfigOutput += 'slowTime = uTime * ' + trailZero(conf.speed * 0.00001) + ';\n';
-        vertexConfigOutput += 'scale.x = ' + trailZero(conf.scale.x) + ';\n';
-        vertexConfigOutput += 'scale.y = ' + trailZero(conf.scale.y) + ';\n';
-        vertexConfigOutput += 'scale.z = ' + trailZero(conf.scale.z) + ';\n';
-        vertexConfigOutput += 'detail.x = ' + trailZero(conf.detail.x) + ';\n';
-        vertexConfigOutput += 'detail.y = ' + trailZero(conf.detail.y) + ';\n';
-        vertexConfigOutput += 'detail.z = ' + trailZero(conf.detail.z) + ';\n';
+        vertexConfigOutput += 'scale = vec3(' + trailZero(conf.scale.x) + ',' + trailZero(conf.scale.y) + ',' + trailZero(conf.scale.z) + ');\n';
+        vertexConfigOutput += 'detail = vec3(' + trailZero(conf.detail.x) + ',' + trailZero(conf.detail.y) + ',' + trailZero(conf.detail.z) + ');\n';
         vertexConfigOutput += preset.vertex;
+        vertexConfigOutput += '\n}\n';
     }
     const vertexShader = /*glsl*/`
         varying vec2 vUv;
