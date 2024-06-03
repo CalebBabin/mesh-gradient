@@ -18,7 +18,7 @@ const fragmentShader = /*glsl*/`
 		float chroma = 0.75;
 		gl_FragColor = lch_to_rgb(
 			vec4(
-				distance(vHeight, -1.0) * 0.75,
+				distance(vHeight, 1.0) * 0.5,
 				chroma,
 				vertexNoise.x + uTime * 0.00001,
 				1.0
