@@ -1,5 +1,6 @@
 import { FrontSide, ShaderMaterial } from 'three';
 import GLSL_colorSpaces from './colorSpaces.glsl?raw';
+import GLSL_easing from './easing.glsl?raw';
 
 import GLSL_simplexNoise3D from './noise/simplex.glsl?raw';
 const timeOffset = Math.random() * -10000000;
@@ -39,15 +40,15 @@ const vertexDictionary = {
         name: 'Zeroing Noise',
         description: 'somewhat smooths out the surface of the plane',
         vertex: /*glsl*/`
-        float helper = pow(abs(simplexNoise3D(vec3(
+        float smoothness = max(simplexNoise3D(vec3(
             vUv.x * detail.x + slowTime,
             vUv.y * detail.y + slowTime * 0.5,
             slowTime * 0.1
-        ))), 3.0) * scale.y;
+        )), 0.0) * scale.y;
 
-        helper = clamp(helper, -1.0, 1.0);
+        smoothness = clamp(smoothness, 0.0, 1.0);
 
-        offset.y = mix(0.0, offset.y, 1.0 - pow(clamp(abs(helper), 0.0, 1.0), 3.0));
+        offset.y = mix(offset.y, 0.0, sineInOut(smoothness));
 
         // vertexNoise.x = mix(vertexNoise.x, 5000.0, pow(helper, 7.0));
         // vertexNoise.y = mix(vertexNoise.y, 5000.0, pow(helper, 7.0));
@@ -145,6 +146,7 @@ export function generateMaterial(vertexConfig, fragmentConfig) {
         uniform float uTime;
 
         ${GLSL_simplexNoise3D}
+        ${GLSL_easing}
 
         void main() {
             if (viewportSize.x < viewportSize.y) {
