@@ -188,10 +188,10 @@ function Controls({ hide = false, locked = false, setLockUI }) {
                         const scaleFactor = Math.random();
                         const item = {
                             name: Object.keys(vertexDictionary)[Math.floor(Math.random() * Object.keys(vertexDictionary).length)],
-                            scale: { 
-                                x: Math.pow(scaleFactor, 3) * 2, 
-                                y: Math.pow(scaleFactor * (Math.random()*0.5 + 0.6), 3) * 2, 
-                                z: r() 
+                            scale: {
+                                x: Math.pow(scaleFactor, 3) * 2,
+                                y: Math.pow(scaleFactor * (Math.random() * 0.5 + 0.6), 3) * 2,
+                                z: r()
                             },
                             detail: {
                                 x: Math.pow(Math.random(), 2) * 10,
@@ -223,7 +223,7 @@ function Controls({ hide = false, locked = false, setLockUI }) {
         </div>
         <div
             style={{ opacity: hide ? 0 : locked ? 1 : 0.5 }}
-            className='transition-opacity duration-500 p-2 h-full overflow-y-scroll bg-white text-black rounded-md w-full h-[50vh] flex gap-2 flex-col'>
+            className='transition-opacity duration-500 p-2 h-full overflow-y-scroll bg-white text-black rounded-md h-[50vh] flex gap-2 flex-col'>
             Controls
             {vertexElements}
         </div>
