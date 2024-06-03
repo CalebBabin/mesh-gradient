@@ -162,8 +162,8 @@ function Controls({ hide = false, locked = false, setLockUI }) {
                     key={i}
                     data={conf}
                     setData={(new_data) => {
-                        const new_config = [...vertexConfig];
-                        new_config[i] = new_data;
+                        const new_config = { ...config };
+                        new_config.vertex.nodes[i] = new_data;
                         setConfig(new_config);
                     }}
                 />
