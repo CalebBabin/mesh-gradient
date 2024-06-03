@@ -269,7 +269,7 @@ function Controls({ hide = false, locked = false, setLockUI }) {
 }
 
 function App() {
-    const [hideUI, setHideUI] = useState(false);
+    const [hideUI, setHideUI] = useState(true);
     const [lockUI, setLockUI] = useState(false);
 
     useMemo(() => {
