@@ -40,15 +40,15 @@ const vertexDictionary = {
         name: 'Zeroing Noise',
         description: 'somewhat smooths out the surface of the plane',
         vertex: /*glsl*/`
-        float smoothness = max(simplexNoise3D(vec3(
+        float smoothness = simplexNoise3D(vec3(
             vUv.x * detail.x + slowTime,
             vUv.y * detail.y + slowTime * 0.5,
             slowTime * 0.1
-        )), 0.0) * scale.y;
+        )) * 0.5 + 0.5;
 
-        smoothness = clamp(smoothness, 0.0, 1.0);
+        smoothness *= scale.y;
 
-        offset.y = mix(offset.y, 0.0, sineInOut(smoothness));
+        offset.y = mix(offset.y, 0.0, clamp(smoothness, 0.0, 1.0));
 
         // vertexNoise.x = mix(vertexNoise.x, 5000.0, pow(helper, 7.0));
         // vertexNoise.y = mix(vertexNoise.y, 5000.0, pow(helper, 7.0));
