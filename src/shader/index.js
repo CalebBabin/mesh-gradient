@@ -8,20 +8,19 @@ const fragmentShader = /*glsl*/`
 	precision highp float;
 	varying vec2 vUv;
 	varying vec2 originalUv;
-	varying float height;
-	varying vec2 swirlOffset;
+	varying float vHeight;
+	varying vec2 vertexNoise;
 	uniform float uTime;
 
 	${GLSL_colorSpaces}
 
 	void main() {
-		float normalizedHeight = height * 0.5 + 0.5;
 		float chroma = 0.75;
 		gl_FragColor = lch_to_rgb(
 			vec4(
-				0.6 + (normalizedHeight * 0.2),
+				distance(vHeight, -1.0) * 0.75,
 				chroma,
-				swirlOffset.x + uTime * 0.00001,
+				vertexNoise.x + uTime * 0.00001,
 				1.0
 			) * 100.0
 		);
@@ -37,23 +36,23 @@ const fragmentShader = /*glsl*/`
 		// gl_FragColor = lch_to_rgb(
 		// 	mix(
 		// 		vec4(
-		// 			normalizedHeight *0.5 + 0.5,
+		// 			normalizedvHeight *0.5 + 0.5,
 		// 			chroma,
-		// 			normalizedHeight * 2.0 - 1.0 + uTime * 0.00002,
+		// 			normalizedvHeight * 2.0 - 1.0 + uTime * 0.00002,
 		// 			1.0
 		// 		) * 100.0,
 		// 		vec4(
-		// 			1.0 - (normalizedHeight * 0.5),
+		// 			1.0 - (normalizedvHeight * 0.5),
 		// 			chroma,
 		// 			originalUv.y * 2.0 - 1.0 + uTime * 0.00001,
 		// 			1.0
 		// 		) * 100.0,
-		// 		swirlOffset.x
+		// 		vertexNoise.x
 		// 	)
 		// );
 
 		// float multiplier = 0.25;
-		// float darken = (1.0 - height) * multiplier + (1.0 - multiplier);
+		// float darken = (1.0 - vHeight) * multiplier + (1.0 - multiplier);
 		// gl_FragColor = vec4(originalUv.x * darken, originalUv.y * darken, 1.0, 1.0);
 		gl_FragColor.a = 1.0;
 	}
@@ -89,20 +88,24 @@ const vertexDictionary = {
         offset.y += (sin(uv.y * detail.y * 250.0) + 1.0) * 0.5 * (
                 pow(cos(vUv.y * detail.y * 40.0 + slowTime * 0.2) * 0.5 + 0.5, 3.0) *
                 pow(cos(vUv.x * detail.z * 3.0 + vUv.y * detail.z * 2.0 + slowTime * 0.3) * 0.5 + 0.5, 3.0)) * scale.y;
-        `},
+    `},
     presetSmoothingNoiseA: {
-        name: 'Smoothing Noise',
-        description: 'Smooths out the surface of the plane',
+        name: 'Zeroing Noise',
+        description: 'somewhat smooths out the surface of the plane',
         vertex: /*glsl*/`
-        offset.y = mix(
-            offset.y,
-            pow(offset.y * simplexNoise3D(vec3(
-                vUv.x * detail.x * 1.0 + slowTime,
-                vUv.y * detail.y * 5.0 + slowTime * 0.5,
-                slowTime * 0.1
-            )), 2.0),
-            clamp(0.0, abs(scale.y), 1.0)
-        );`},
+        float helper = pow(abs(simplexNoise3D(vec3(
+            vUv.x * detail.x + slowTime,
+            vUv.y * detail.y + slowTime * 0.5,
+            slowTime * 0.1
+        ))), 3.0) * scale.y;
+
+        helper = clamp(helper, -1.0, 1.0);
+
+        offset.y = mix(0.0, offset.y, 1.0 - pow(clamp(abs(helper), 0.0, 1.0), 3.0));
+
+        // vertexNoise.x = mix(vertexNoise.x, 5000.0, pow(helper, 7.0));
+        // vertexNoise.y = mix(vertexNoise.y, 5000.0, pow(helper, 7.0));
+    `},
 };
 window.vertexDictionary = vertexDictionary;
 
@@ -135,8 +138,8 @@ export function generateMaterial(options = {}) {
     const vertexShader = /*glsl*/`
         varying vec2 vUv;
         varying vec2 originalUv;
-        varying vec2 swirlOffset;
-        varying float height;
+        varying vec2 vertexNoise;
+        varying float vHeight;
         uniform vec2 viewportSize;
         uniform float uTime;
 
@@ -150,20 +153,20 @@ export function generateMaterial(options = {}) {
             }
             originalUv = vec2(uv.x, uv.y);
 
-            vec3 offset = vec3(0.0);
 
+            vertexNoise = vec2(
+                simplexNoise3D(vec3(vUv.x * 0.2, vUv.y * 3.0, (uTime / 30000.0) * 0.3)),
+                simplexNoise3D(vec3(vUv.x * 2.0, vUv.y * 2.0, (uTime / 30000.0) * 0.5))
+            );
+
+            vec3 offset = vec3(0.0);
             float speed = 1.0;
             vec3 scale = vec3(1.0);
             vec3 detail = vec3(1.0);
             float slowTime = uTime;
             ${vertexConfigOutput}
         
-            height = offset.y;
-
-            swirlOffset = vec2(
-                simplexNoise3D(vec3(vUv.x * 0.2, vUv.y * 3.0, (uTime / 30000.0) * 0.3)),
-                simplexNoise3D(vec3(vUv.x * 2.0, vUv.y * 2.0, (uTime / 30000.0) * 0.5))
-            );
+            vHeight = offset.y;
 
             gl_Position = projectionMatrix * modelViewMatrix * vec4(position + offset.zxy, 1.0);
         }
