@@ -126,6 +126,9 @@ function NodeRenderer({ node, deleteNode }) {
 			setMouseStart({ x: e.clientX, y: e.clientY });
 			e.preventDefault();
 		}}
+		onDropCapture={e => {
+			console.log('drop', e);
+		}}
 		style={{
 			transform: 'translate(' + x + 'px, ' + y + 'px)',
 		}}
@@ -186,13 +189,13 @@ function LineDrawer() {
 			let yDist = line.end.y - line.start.y;
 			let xDist = line.end.x - line.start.x;
 			const ratio = Math.abs(xDist / yDist);
-			if (ratio > 1) {
-				xDist = xDist / ratio;
-			}
+			// if (ratio > 1) {
+			xDist = xDist / ratio;
+			// }
 
 			return <path
 				key={key}
-				d={`M ${2500 + (line.start.x)} ${2500 + (line.start.y)} C ${2500 + line.start.x + xDist} ${2500 + (line.start.y)} ${2500 + line.end.x - xDist} ${2500 + (line.end.y)} ${2500 + (line.end.x)} ${2500 + (line.end.y)}`}
+				d={`M ${2500 + (line.start.x)} ${2500 + (line.start.y)} C ${2500 + line.start.x + Math.abs(xDist)} ${2500 + (line.start.y)} ${2500 + line.end.x - Math.abs(xDist)} ${2500 + (line.end.y)} ${2500 + (line.end.x)} ${2500 + (line.end.y)}`}
 				stroke="#ffffff"
 				strokeWidth="4"
 				strokeDasharray={10}
