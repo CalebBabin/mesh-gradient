@@ -304,7 +304,7 @@ function App() {
 		<>
 			<Editor />
 			<FullscreenButton hide={!visible} locked={lockUI} />
-			<Controls hide={!visible} locked={lockUI} setLockUI={setLockUI} />
+			<Controls hide={true} locked={lockUI} setLockUI={setLockUI} />
 		</>
 	)
 }

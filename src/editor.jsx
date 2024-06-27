@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 let globalID = 0;
 class Node {
@@ -14,32 +14,28 @@ class Node {
 	}
 }
 
-function Connector({ node, nodeX, nodeY, side = 1 }) {
+function Connector({ node, nodeX, nodeY, link = undefined }) {
 	const [targetX, setTargetX] = useState(Math.random() * 200 - 100);
 	const [targetY, setTargetY] = useState(Math.random() * 200 - 100);
 
-	const [targetMouseDown, setTargetMouseDown] = useState(false);
-	const [targetMouseStart, setTargetMouseStart] = useState({ x: 0, y: 0 });
+	const [startX, setStartX] = useState(targetX);
+	const [startY, setStartY] = useState(targetY);
 
 	useEffect(() => {
-		if (!targetMouseDown) return;
-		const moveListener = (e) => {
-			e.preventDefault();
-			setTargetX(targetX + (e.clientX - targetMouseStart.x));
-			setTargetY(targetY + (e.clientY - targetMouseStart.y));
+		if (link === undefined) return;
+		const listener = ({ detail }) => {
+			if (detail.id === link) {
+				setTargetX(detail.x);
+				setTargetY(detail.y);
+				setStartX(detail.x - 150);
+				setStartY(detail.y);
+			}
 		}
-		window.addEventListener('mousemove', moveListener);
-
-		const dehookListener = () => { setTargetMouseDown(false) };
-		window.addEventListener('mouseup', dehookListener);
-		window.addEventListener('blur', dehookListener);
-
+		window.addEventListener('node-move', listener);
 		return () => {
-			window.removeEventListener('mousemove', moveListener);
-			window.removeEventListener('mouseup', dehookListener);
-			window.removeEventListener('blur', dehookListener);
+			window.removeEventListener('node-move', listener);
 		}
-	}, [targetMouseDown, targetMouseStart]);
+	}, [link])
 
 	useEffect(() => {
 		if (!node) return;
@@ -69,25 +65,41 @@ function Connector({ node, nodeX, nodeY, side = 1 }) {
 				id: node.id,
 				action: 'update',
 				lineStart: { x: nodeX + 125, y: nodeY },
-				lineEnd: { x: targetX, y: targetY },
+				lineEnd: { x: targetX + (link === undefined ? 0 : -150), y: targetY },
 			}
 		}));
-	}, [node, targetX, targetY, nodeX, nodeY]);
+	}, [node, targetX, targetY, nodeX, nodeY, link]);
 
 	return <>
-		<div className={(side > 0 ? "left-full" : "right-full") + " top-1/2 absolute -m-1 w-2 h-2 bg-blue-300 hover:-m-2 hover:w-4 hover:h-4 hover:bg-blue-600"} />
+		{/* <div className={(side > 0 ? "left-full" : "right-full") + " top-1/2 absolute -m-1 w-2 h-2 bg-blue-300 hover:-m-2 hover:w-4 hover:h-4 hover:bg-blue-600"} /> */}
 		<div
-			onMouseDown={e => {
-				e.preventDefault();
-				e.stopPropagation()
-				setTargetMouseDown(true);
-				setTargetMouseStart({ x: e.clientX, y: e.clientY });
+			// onMouseDown={e => {
+			// 	e.preventDefault();
+			// 	e.stopPropagation()
+			// 	setTargetMouseDown(true);
+			// 	setTargetMouseStart({ x: e.clientX, y: e.clientY });
+			// }}
+			onDrag={e => {
+				if (e.clientX === 0 && e.clientY === 0) return;
+				setTargetX(e.clientX - window.innerWidth / 2);
+				setTargetY(e.clientY - window.innerHeight / 2);
+			}}
+			onDragStart={e => {
+				setTargetX(e.clientX - window.innerWidth / 2);
+				setTargetY(e.clientY - window.innerHeight / 2);
+				e.dataTransfer.setData('text/plain', node.id);
+				e.dataTransfer.dropEffect = 'move';
+			}}
+			onDragEnd={e => {
+				setStartX(e.clientX - window.innerWidth / 2);
+				setStartY(e.clientY - window.innerHeight / 2);
 			}}
 			draggable={true}
 			style={{
-				transform: 'translate(' + (targetX - nodeX) + 'px,' + (targetY - nodeY) + 'px)',
+				transform: 'translate(' + (startX) + 'px,' + (startY) + 'px)',
 			}}
-			className="absolute top-1/2 left-1/2 -m-1 w-2 h-2 bg-blue-300 hover:-m-2 hover:w-4 hover:h-4 hover:bg-blue-600"
+			data-connector={true}
+			className="absolute z-20 top-1/2 left-1/2 -m-1 w-2 h-2 bg-blue-300 hover:-m-2 hover:w-4 hover:h-4 hover:bg-blue-600"
 		/>
 	</>
 }
@@ -96,15 +108,45 @@ const NODE_SIZE_CLASS = ` w-64 -ml-32 h-32 -mt-16`;
 function NodeRenderer({ node, deleteNode }) {
 	const [x, setX] = useState(0);
 	const [y, setY] = useState(0);
+	const [outlined, setOutlined] = useState(false); // used for drag&drop hover effects
 	const [mouseDown, setMouseDown] = useState(false);
 	const [mouseStart, setMouseStart] = useState({ x: y, y: 0 });
+	const [link, setLink] = useState(undefined);
+
+	useEffect(() => {
+		const listener = ({ detail }) => {
+			if (detail.id === node.id) {
+				setLink(detail.targetId);
+			} else if (detail.targetId === link) {
+				setLink(undefined);
+			}
+		}
+		window.addEventListener('node-link', listener);
+		return () => {
+			window.removeEventListener('node-link', listener);
+		}
+	}, [link, node?.id]);
+
+	useEffect(() => {
+		console.log(node.id, 'linked to', link);
+	}, [link, node]);
 
 	useEffect(() => {
 		if (!mouseDown) return;
 		const moveListener = (e) => {
 			e.preventDefault();
-			setX(x + (e.clientX - mouseStart.x));
-			setY(y + (e.clientY - mouseStart.y));
+			const newX = x + (e.clientX - mouseStart.x);
+			const newY = y + (e.clientY - mouseStart.y);
+			setX(newX);
+			setY(newY);
+
+			window.dispatchEvent(new CustomEvent('node-move', {
+				detail: {
+					id: node.id,
+					x: newX,
+					y: newY,
+				}
+			}))
 		}
 		window.addEventListener('mousemove', moveListener);
 
@@ -120,59 +162,124 @@ function NodeRenderer({ node, deleteNode }) {
 		}
 	}, [mouseDown, mouseStart]);
 
-	return <div
-		onMouseDown={e => {
-			setMouseDown(true);
-			setMouseStart({ x: e.clientX, y: e.clientY });
-			e.preventDefault();
-		}}
-		onDropCapture={e => {
-			console.log('drop', e);
-		}}
-		style={{
-			transform: 'translate(' + x + 'px, ' + y + 'px)',
-		}}
-		className={"absolute box-border bg-black rounded-lg border-white/80 border-2 text-white p-2" + NODE_SIZE_CLASS}
-	>
-		<div className="cursor-move">
-			move
+	return <>
+		<div
+			onMouseDown={e => {
+				setMouseDown(true);
+				setMouseStart({ x: e.clientX, y: e.clientY });
+				e.preventDefault();
+			}}
+			onDrop={e => {
+				const data = parseInt(e.dataTransfer.getData("text/plain"), 10);
+				if (data !== node.id) {
+					window.dispatchEvent(new CustomEvent('node-link', {
+						detail: {
+							id: data,
+							targetId: node.id,
+						}
+					}))
+				} else {
+					console.log('cannot link node to self!', node.id);
+				}
+			}}
+			onDragEnter={e => {
+				e.preventDefault();
+			}}
+			onDragOver={e => {
+				e.preventDefault();
+			}}
+			onDragExit={e => {
+				setOutlined(false);
+			}}
+			style={{
+				transform: 'translate(' + x + 'px, ' + y + 'px)',
+				outline: outlined ? '2px dashed blue' : 'none',
+			}}
+			className={"absolute z-10 box-border bg-black rounded-lg border-white/80 border-2 text-white p-2" + NODE_SIZE_CLASS}
+		>
+			<div className="cursor-move">
+				move
+			</div>
+			Node!
 		</div>
-		Node!
-		<Connector node={node} side={1} nodeX={x} nodeY={y} />
-	</div>
+		<Connector node={node} link={link} nodeX={x} nodeY={y} />
+	</>
 }
 
-function LineDrawer() {
-	const [lines, setLines] = useState({});
+function Line(props) {
+	const [startX, setStartX] = useState(props.startX ?? 0);
+	const [startY, setStartY] = useState(props.startY ?? 0);
+	const [endX, setEndX] = useState(props.endX ?? 0);
+	const [endY, setEndY] = useState(props.endY ?? 0);
+
 	useEffect(() => {
+		console.log('adding line', props.id);
 		const lineChangeListener = (e) => {
 			const { id, action, lineStart, lineEnd } = e.detail;
+			if (Number(id) !== Number(props.id) || action !== 'update') return;
+			setStartX(lineStart.x ?? startX);
+			setStartY(lineStart.y ?? startY);
+			setEndX(lineEnd.x ?? endX);
+			setEndY(lineEnd.y ?? endY);
+		}
+
+		window.addEventListener('lineChange', lineChangeListener);
+		return () => {
+			console.log('removing line', props.id);
+			window.removeEventListener('lineChange', lineChangeListener);
+		}
+	}, [props.id]);
+
+	const yDist = endY - startY;
+	let xDist = endX - startX;
+	const ratio = Math.abs(xDist / yDist);
+	xDist = xDist / ratio;
+
+	return <path
+		d={`M ${2500 + (startX)} ${2500 + (startY)} C ${2500 + startX + Math.abs(xDist)} ${2500 + (startY)} ${2500 + endX - Math.abs(xDist)} ${2500 + (endY)} ${2500 + (endX)} ${2500 + (endY)}`}
+		stroke="#ffffff"
+		strokeWidth="4"
+		strokeDasharray={10}
+		fill="none"
+	/>
+}
+
+function LineComposer() {
+	const [lines, setLines] = useState(new Array());
+
+	useEffect(() => {
+		const lineMap = new Map();
+		lines.forEach(line => {
+			lineMap.set(line.id, true);
+		})
+
+		let newLines = Array.from(lines);
+
+		const lineChangeListener = (e) => {
+			const { id, action, lineStart, lineEnd } = e.detail;
+			const lineId = Number(id);
 
 			switch (action) {
-				case 'add':
-					setLines({
-						...lines,
-						[id]: {
-							start: lineStart,
-							end: lineEnd,
+				case 'delete': {
+					for (let i = 0; i < newLines.length; i++) {
+						if (newLines[i].id === lineId) {
+							newLines.splice(i, 1);
+							break;
 						}
-					});
-					break;
-				case 'delete':
-					const newLines = { ...lines };
-					delete newLines[id];
+					}
+					lineMap.delete(lineId);
 					setLines(newLines);
-					break;
-				case 'update':
-					setLines({
-						...lines,
-						[id]: {
+				} break;
+				default:
+					if (!lineMap.has(lineId)) {
+						lineMap.set(lineId, true);
+						newLines.push({
+							id: lineId,
 							start: lineStart,
 							end: lineEnd,
-						}
-					});
-					break;
-				default:
+						})
+						setLines(newLines);
+					}
 					break;
 			}
 		}
@@ -184,26 +291,14 @@ function LineDrawer() {
 	}, [lines]);
 
 	return <svg width={5000} height={5000} style={{ margin: '-2500px 0 0 -2500px' }} className="absolute top-0 left-0 pointer-events-none">
-		{Object.keys(lines).map((key) => {
-			const line = lines[key];
-			let yDist = line.end.y - line.start.y;
-			let xDist = line.end.x - line.start.x;
-			const ratio = Math.abs(xDist / yDist);
-			// if (ratio > 1) {
-			xDist = xDist / ratio;
-			// }
-
-			return <path
-				key={key}
-				d={`M ${2500 + (line.start.x)} ${2500 + (line.start.y)} C ${2500 + line.start.x + Math.abs(xDist)} ${2500 + (line.start.y)} ${2500 + line.end.x - Math.abs(xDist)} ${2500 + (line.end.y)} ${2500 + (line.end.x)} ${2500 + (line.end.y)}`}
-				stroke="#ffffff"
-				strokeWidth="4"
-				strokeDasharray={10}
-				fill="none"
-			/>
-		})}
-
-		<circle cx={5000} cy={5000} r={10} fill="red" />
+		{lines.map((line) => <Line
+			key={line.id}
+			id={line.id}
+			startX={line.start.x}
+			startY={line.start.y}
+			endX={line.end.x}
+			endY={line.end.y}
+		/>)}
 	</svg>
 }
 
@@ -236,7 +331,7 @@ export function Editor({ className }) {
 	}, [nodes]);
 
 	return <div className={"absolute top-1/2 left-1/2" + ' ' + className}>
-		<LineDrawer />
+		<LineComposer />
 		{renderedNodes}
 	</div>
 }
