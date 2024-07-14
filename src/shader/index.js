@@ -3,7 +3,43 @@ import GLSL_colorSpaces from './colorSpaces.glsl?raw';
 import GLSL_easing from './easing.glsl?raw';
 
 import GLSL_simplexNoise3D from './noise/simplex.glsl?raw';
-const timeOffset = Math.random() * -10000000;
+let timeOffset = (Math.random() - 0.5) * 2 * 10000000;
+let timeKeyDirection = 0;
+let lastTimeTick = performance.now();
+function timeTick() {
+	window.requestAnimationFrame(timeTick);
+	const delta = performance.now() - lastTimeTick;
+	lastTimeTick = performance.now();
+	timeOffset += timeKeyDirection * delta * 50;
+};
+window.requestAnimationFrame(timeTick);
+const keyMap = new Map();
+window.addEventListener('keydown', (e) => {
+	if (keyMap.get(e.key)) return;
+	switch (e.key) {
+		case "ArrowLeft": {
+			timeKeyDirection -= 1;
+		} break;
+		case "ArrowRight": {
+			timeKeyDirection += 1;
+		} break;
+	}
+	keyMap.set(e.key, true);
+});
+window.addEventListener('keyup', (e) => {
+	keyMap.set(e.key, false);
+	switch (e.key) {
+		case "ArrowLeft": {
+			timeKeyDirection += 1;
+		} break;
+		case "ArrowRight": {
+			timeKeyDirection -= 1;
+		} break;
+	}
+});
+window.addEventListener('blur', (e) => {
+	timeKeyDirection = 0;
+});
 
 const vertexDictionary = {
     presetBigNoiseA: {
