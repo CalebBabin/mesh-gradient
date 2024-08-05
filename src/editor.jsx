@@ -216,7 +216,7 @@ function Line(props) {
 		console.log('adding line', props.id);
 		const lineChangeListener = (e) => {
 			const { id, action, lineStart, lineEnd } = e.detail;
-			if (Number(id) !== Number(props.id) || action !== 'update') return;
+			if (id !== props.id || action !== 'update') return;
 			setStartX(lineStart.x ?? startX);
 			setStartY(lineStart.y ?? startY);
 			setEndX(lineEnd.x ?? endX);
@@ -234,6 +234,7 @@ function Line(props) {
 	let xDist = endX - startX;
 	const ratio = Math.abs(xDist / yDist);
 	xDist = xDist / ratio;
+	if (Number.isNaN(xDist)) xDist = 2;
 
 	return <path
 		d={`M ${2500 + (startX)} ${2500 + (startY)} C ${2500 + startX + Math.abs(xDist)} ${2500 + (startY)} ${2500 + endX - Math.abs(xDist)} ${2500 + (endY)} ${2500 + (endX)} ${2500 + (endY)}`}

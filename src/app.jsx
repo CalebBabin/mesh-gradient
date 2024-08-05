@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Editor } from './editor';
+import { MeshScene } from './MeshScene';
 
 
 function FullscreenButton({ hide = false }) {
@@ -74,7 +75,7 @@ function XYZInput({ data, setData }) {
 
 function VertexConfig({ data, setData }) {
 	return <div className='flex flex-wrap items-center gap-2 p-2 pt-1 border-[2px] rounded box-content'>
-		<input type='text' value={vertexDictionary[data.name].name} readOnly />
+		<input type='text' value={nodeDictionary[data.name].name} readOnly />
 		<label>
 			scale:
 			<input type='number' value={data.scale.y} onChange={e => {
@@ -112,7 +113,7 @@ function VertexConfig({ data, setData }) {
 
 function Controls({ hide = false, locked = false, setLockUI }) {
 	const [config, setConfig] = useState(undefined);
-	const [vertexDictionary, setVertexDictionary] = useState(null);
+	const [nodeDictionary, setNodeDictionary] = useState(null);
 
 	const ref = useRef(null);
 	useMemo(() => {
@@ -132,11 +133,11 @@ function Controls({ hide = false, locked = false, setLockUI }) {
 	useMemo(() => {
 		if (window.config !== undefined) {
 			setConfig(window.config);
-			setVertexDictionary(window.vertexDictionary);
+			setNodeDictionary(window.nodeDictionary);
 		} else {
 			const listener = () => {
 				setConfig(window.config);
-				setVertexDictionary(window.vertexDictionary);
+				setNodeDictionary(window.nodeDictionary);
 			}
 			window.addEventListener('vertexConfigLoaded', listener);
 
@@ -190,7 +191,7 @@ function Controls({ hide = false, locked = false, setLockUI }) {
 					for (let i = 0; i < count; i++) {
 						const scaleFactor = Math.random();
 						const item = {
-							name: Object.keys(vertexDictionary)[Math.floor(Math.random() * Object.keys(vertexDictionary).length)],
+							name: Object.keys(nodeDictionary)[Math.floor(Math.random() * Object.keys(nodeDictionary).length)],
 							scale: {
 								x: Math.pow(scaleFactor, 3) * 2,
 								y: Math.pow(scaleFactor * (Math.random() * 0.5 + 0.6), 3) * 2,
@@ -269,6 +270,27 @@ function Controls({ hide = false, locked = false, setLockUI }) {
 	</div>;
 }
 
+const presetNodes = [
+	{
+		name: 'fragmentCheckers',
+		scale: { x: 1, y: 0.5, z: 1 },
+		detail: { x: 1 * 3, y: 2 * 3, z: 1 * 3 },
+		speed: { x: 1, y: 1, z: 1 },
+	},
+	{
+		name: 'presetBigNoiseA',
+		scale: { x: 1, y: 0.5, z: 1 },
+		detail: { x: 1, y: 1, z: 1 },
+		speed: { x: 1, y: 1, z: 1 },
+	},
+	{
+		name: 'presetBigNoiseB',
+		scale: { x: 1, y: 1, z: 1 },
+		detail: { x: 1, y: 0.1, z: 1 },
+		speed: { x: 1, y: 1, z: 1 },
+	},
+];
+
 function App() {
 	const [hideUI, setHideUI] = useState(true);
 	const [lockUI, setLockUI] = useState(false);
@@ -302,6 +324,7 @@ function App() {
 	const visible = lockUI || !hideUI;
 	return (
 		<>
+			<MeshScene materialNodes={presetNodes} />
 			<Editor />
 			<FullscreenButton hide={!visible} locked={lockUI} />
 			<Controls hide={true} locked={lockUI} setLockUI={setLockUI} />
