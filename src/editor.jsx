@@ -304,7 +304,7 @@ function LineComposer() {
 }
 
 export function Editor({ className }) {
-	const [nodes, setNodes] = useState([new Node(), new Node(), new Node()]);
+	const [nodes, setNodes] = useState([]);
 
 	const addNode = useMemo(() => (node) => {
 		setNodes([...nodes, new Node(node)]);

@@ -154,7 +154,7 @@ const nodeDictionary = {
 		name: 'Dampining Noise',
 		description: 'Smooths out elevation changes closer to the camera',
 		vertex: /*glsl*/`
-			offset.y = mix(offset.y * (1.0 - uv.y), offset.y, 1.0 - uv.y);
+			offset.y = mix(offset.y * (1.0 - pow(uv.y, 10.0)), offset.y, 0.0);
 		`},
 };
 
@@ -317,7 +317,7 @@ export function generateMaterial(nodes) {
 
 
 			vertexNoise = vec2(
-				simplexNoise3D(vec3(vUv.x * 0.25, vUv.y * 0.25, (uTime / 30000.0) * 0.3)),
+				simplexNoise3D(vec3(vUv.x * 0.25, vUv.y * 1.0, (uTime / 30000.0) * 0.3)),
 				simplexNoise3D(vec3(vUv.x * 0.25, vUv.y * 0.25, (uTime / 30000.0) * 0.5))
 			);
 
