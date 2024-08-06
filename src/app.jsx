@@ -274,7 +274,7 @@ const presetNodes = [
 	{
 		name: 'fragmentCheckersAlt',
 		scale: { x: 1, y: 0.5, z: 1 },
-		detail: { x: 1 * 0.75, y: 2 * 0.75, z: 1 * 0.75 },
+		detail: { x: 1 * 0.75, y: 1 * 0.75, z: 1 * 0.75 },
 		speed: { x: 1, y: 1, z: 1 },
 	},
 	{
@@ -291,6 +291,18 @@ const presetNodes = [
 	},
 	{
 		name: 'presetBigNoiseB',
+		scale: { x: 1, y: 4, z: 1 },
+		detail: { x: 1, y: 0.1, z: 1 },
+		speed: { x: 1, y: 1, z: 1 },
+	},
+	{
+		name: 'presetBigNoiseB',
+		scale: { x: 1, y: 4, z: 1 },
+		detail: { x: 1.5, y: 0.2, z: 1 },
+		speed: { x: -1, y: 1, z: 1 },
+	},
+	{
+		name: 'dampingNoise',
 		scale: { x: 1, y: 4, z: 1 },
 		detail: { x: 1, y: 0.1, z: 1 },
 		speed: { x: 1, y: 1, z: 1 },

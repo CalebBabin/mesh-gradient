@@ -77,10 +77,10 @@ const nodeDictionary = {
 				gl_FragColor *= vec4(0.5);
 			}
 		`},
-		fragmentCheckersAlt: {
-			name: 'Checkers',
-			description: 'Adds a checkerboard pattern',
-			fragment: /*glsl*/`
+	fragmentCheckersAlt: {
+		name: 'Checkers',
+		description: 'Adds a checkerboard pattern',
+		fragment: /*glsl*/`
 				if (
 					mod(
 						floor(
@@ -149,6 +149,12 @@ const nodeDictionary = {
 
 			// vertexNoise.x = mix(vertexNoise.x, 5000.0, pow(helper, 7.0));
 			// vertexNoise.y = mix(vertexNoise.y, 5000.0, pow(helper, 7.0));
+		`},
+	dampingNoise: {
+		name: 'Dampining Noise',
+		description: 'Smooths out elevation changes closer to the camera',
+		vertex: /*glsl*/`
+			offset.y = mix(offset.y * (1.0 - uv.y), offset.y, 1.0 - uv.y);
 		`},
 };
 
@@ -222,7 +228,7 @@ export function generateMaterial(nodes) {
 			vec4(
 				0.85,
 				chroma,
-				vertexNoise.x + uTime * 0.0001,
+				vertexNoise.x + uTime * 0.00001,
 				1.0
 			) * 100.0
 		);
