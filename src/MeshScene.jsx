@@ -42,7 +42,7 @@ function MeshAdder({ geometry, material, scale, rotation }) {
 export function MeshScene({
 	widthSegments = 512,
 	heightSegments = 512,
-	scale = [5, 5, 1],
+	scale = [30, 15, 1],
 	rotation = [Math.PI * 0.5, 0, 0],
 	cameraConfig = {},
 	materialNodes = [],
@@ -77,8 +77,8 @@ export function MeshScene({
 	}, [cameraConfig]);
 
 	useEffect(() => {
-		camera.position.set(0, 2, 3);
-		camera.lookAt(0, 0, 0.5);
+		camera.position.set(0, 3, 8);
+		camera.lookAt(0, 0, 4);
 	}, [camera]);
 
 	return <div className='w-full h-full inset-0 absolute'>

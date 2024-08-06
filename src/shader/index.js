@@ -77,6 +77,33 @@ const nodeDictionary = {
 				gl_FragColor *= vec4(0.5);
 			}
 		`},
+		fragmentCheckersAlt: {
+			name: 'Checkers',
+			description: 'Adds a checkerboard pattern',
+			fragment: /*glsl*/`
+				if (
+					mod(
+						floor(
+							(vUv.x + slowTime * speed.x) * detail.x * 10.0
+						) + floor(
+							(vUv.y + slowTime * speed.y) * detail.y * 10.0
+						),
+						2.0
+					) == 0.0
+				) {
+					if (
+						mod(
+							floor(
+								(vUv.x + slowTime * speed.x) * detail.x * 10.0 * 10.0
+							) + floor(
+								(vUv.y + slowTime * speed.y) * detail.y * 10.0 * 10.0
+							),
+							2.0
+						) == 0.0) {
+						gl_FragColor *= vec4(0.8);
+					}
+				}
+			`},
 	presetBigNoiseA: {
 		name: 'Wave Noise',
 		description: 'Adds soft waves to the surface of the plane',

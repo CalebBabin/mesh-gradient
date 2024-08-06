@@ -272,20 +272,26 @@ function Controls({ hide = false, locked = false, setLockUI }) {
 
 const presetNodes = [
 	{
-		name: 'fragmentCheckers',
+		name: 'fragmentCheckersAlt',
 		scale: { x: 1, y: 0.5, z: 1 },
-		detail: { x: 1 * 3, y: 2 * 3, z: 1 * 3 },
+		detail: { x: 1 * 0.75, y: 2 * 0.75, z: 1 * 0.75 },
 		speed: { x: 1, y: 1, z: 1 },
 	},
 	{
 		name: 'presetBigNoiseA',
-		scale: { x: 1, y: 0.5, z: 1 },
-		detail: { x: 1, y: 1, z: 1 },
+		scale: { x: 1, y: 2, z: 1 },
+		detail: { x: 1, y: 0.5, z: 1 },
+		speed: { x: 1, y: 1, z: 1 },
+	},
+	{
+		name: 'presetBigNoiseA',
+		scale: { x: 6, y: 6, z: 6 },
+		detail: { x: 0.1, y: 0.05, z: 0.1 },
 		speed: { x: 1, y: 1, z: 1 },
 	},
 	{
 		name: 'presetBigNoiseB',
-		scale: { x: 1, y: 1, z: 1 },
+		scale: { x: 1, y: 4, z: 1 },
 		detail: { x: 1, y: 0.1, z: 1 },
 		speed: { x: 1, y: 1, z: 1 },
 	},
