@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { EventEmitter } from "./emitter";
 import { StartShader, StopShader } from "./shaders/StartStopUtils";
 import { compileShaders } from "./shaders/BASE";
+import { CheckerboardShader } from "./shaders/Checkerboard";
 
 const nodeWidth = 300;
 const nodeHeight = 150;
@@ -170,6 +171,13 @@ function Line({ startX, startY, endX, endY }) {
 		style={{ margin: '-2500px 0 0 -2500px' }}
 		className="absolute top-0 left-0 pointer-events-none"
 	>
+
+		<path
+			d={`M ${SVGCanvasSizeHalf + (startX)} ${SVGCanvasSizeHalf + (startY)} C ${SVGCanvasSizeHalf + startX + Math.abs(xDist)} ${SVGCanvasSizeHalf + (startY)} ${SVGCanvasSizeHalf + endX - Math.abs(xDist)} ${SVGCanvasSizeHalf + (endY)} ${SVGCanvasSizeHalf + (endX)} ${SVGCanvasSizeHalf + (endY)}`}
+			stroke="#000000"
+			strokeWidth="4"
+			fill="none"
+		/>
 		<path
 			d={`M ${SVGCanvasSizeHalf + (startX)} ${SVGCanvasSizeHalf + (startY)} C ${SVGCanvasSizeHalf + startX + Math.abs(xDist)} ${SVGCanvasSizeHalf + (startY)} ${SVGCanvasSizeHalf + endX - Math.abs(xDist)} ${SVGCanvasSizeHalf + (endY)} ${SVGCanvasSizeHalf + (endX)} ${SVGCanvasSizeHalf + (endY)}`}
 			stroke="#ffffff"
@@ -356,6 +364,8 @@ function Editor({ onChange }) {
 	const context = useContext(NodeContext);
 
 	useEffect(() => {
+		if (nodes.length === 0) return;
+
 		let lastChange = Date.now();
 		const listener = () => {
 			const targetChange = Date.now();
@@ -371,7 +381,7 @@ function Editor({ onChange }) {
 				} else {
 					onChange(compileShaders(startNode));
 				}
-			}, 100);
+			}, 500);
 			onChange();
 		};
 
@@ -431,7 +441,7 @@ function Editor({ onChange }) {
 
 			let prevNode = startNode;
 			for (let i = 1; i < newNodeCount - 1; i++) {
-				const node = new Node({ x: startX + i * nodeWidth }, context);
+				const node = new Node({ x: startX + i * nodeWidth, shader: new CheckerboardShader() }, context);
 				node.connect(prevNode, node);
 				new_nodes.push(node);
 				prevNode = node;

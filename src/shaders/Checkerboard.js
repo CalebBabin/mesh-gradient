@@ -1,8 +1,10 @@
 import { trailZero } from "../utils";
 import { BaseShader } from "./BASE";
 
-export class Checkerboard extends BaseShader {
-	type = "Checkerboard";
+const type = "Checkerboard";
+export class CheckerboardShader extends BaseShader {
+	static type = type;
+	type = type;
 
 	defaults = {
 		detail: { x: 1, y: 1 },
@@ -10,6 +12,8 @@ export class Checkerboard extends BaseShader {
 
 	constructor(data = {}) {
 		super(data);
+
+		this.data = Object.assign(this.defaults, this.data);
 	}
 
 	compile() {
@@ -17,6 +21,9 @@ export class Checkerboard extends BaseShader {
 
 		return {
 			fragment: /*glsl*/`
+				vec3 speed = vec3(1.0, 1.0, 1.0);
+				float slowTime = uTime * 0.00001;
+
 				if (
 					mod(
 						floor(
@@ -36,7 +43,7 @@ export class Checkerboard extends BaseShader {
 							),
 							2.0
 						) == 0.0) {
-						gl_FragColor *= vec4(0.96);
+						gl_FragColor *= vec4(0.5);
 					}
 				}
 			`}

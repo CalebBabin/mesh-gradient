@@ -1,11 +1,12 @@
 import { DoubleSide, ShaderMaterial } from "three";
 import { EventEmitter } from "../emitter";
 import GLSL_colorSpaces from './colorSpaces.glsl?raw';
+import GLSL_simplexNoise3D from './simplex.glsl?raw';
 
 export class BaseShader extends EventEmitter {
 	_data = {};
 	get data() {
-		return _data;
+		return this._data;
 	}
 	set data(newData = {}) {
 		Object.assign(this._data, newData);
@@ -30,10 +31,15 @@ export function compileShaders(startNode) {
 	const sharedStart = /* glsl */`
 		precision highp float;
 
+		varying vec2 vUv;
+		varying vec2 originalUv;
+		varying vec2 vertexNoise;
+
 		uniform vec2 viewportSize;
 		uniform float uTime;
 		uniform float uScale;
 
+		${GLSL_simplexNoise3D}
 		${GLSL_colorSpaces}
 	`;
 	let compiledFrag = /* glsl */`
@@ -44,6 +50,22 @@ export function compileShaders(startNode) {
 	let compiledVert = /* glsl */`
 		${sharedStart}
 		void main() {
+			if (viewportSize.x < viewportSize.y) {
+				vUv = vec2(uv.x, uv.y * (viewportSize.y/viewportSize.x));
+			} else {
+				vUv = vec2(uv.x * (viewportSize.x/viewportSize.y), uv.y);
+			}
+
+			vUv *= vec2(uScale);
+			originalUv = vec2(uv.x, uv.y);
+
+
+			vertexNoise = vec2(
+				simplexNoise3D(vec3(vUv.x * 0.25, vUv.y * 1.0, (uTime / 30000.0) * 0.3)),
+				simplexNoise3D(vec3(vUv.x * 0.25, vUv.y * 0.25, (uTime / 30000.0) * 0.5))
+			);
+
+
 			gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 	`;
 
@@ -66,10 +88,16 @@ export function compileShaders(startNode) {
 		currentNode = node.out;
 
 		if (!node.shader) continue;
-		const { fragment, vertex } = node.shader.compile();
+		try {
+			const { fragment, vertex } = node.shader.compile();
 
-		if (fragment) compiledFrag += '\n{\n' + fragment + '\n}\n';
-		if (vertex) compiledVert += '\n{\n' + vertex + '\n}\n';
+			if (fragment) compiledFrag += '\n{\n' + fragment + '\n}\n';
+			if (vertex) compiledVert += '\n{\n' + vertex + '\n}\n';
+		} catch (e) {
+			console.error(e);
+			console.error('error compiling shader');
+			console.log(node);
+		}
 	}
 
 	compiledFrag += '\n}';
