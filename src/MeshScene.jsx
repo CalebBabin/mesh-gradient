@@ -1,22 +1,14 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { generateMaterial } from './shader';
+
 import './style.css';
 import {
 	Mesh,
 	OrthographicCamera,
-	PlaneGeometry,
 	PerspectiveCamera,
 } from 'three';
 import { useEffect, useMemo } from 'react';
 
-function MaterialTicker({ shader }) {
-	useFrame(() => {
-		if (shader) shader.tick();
-	});
-	return null;
-}
-
-function MeshAdder({ geometry, material, scale, rotation }) {
+export function MeshAdder({ geometry, material, scale, rotation }) {
 	const { scene } = useThree();
 
 	const mesh = useMemo(() => {
@@ -40,21 +32,9 @@ function MeshAdder({ geometry, material, scale, rotation }) {
 }
 
 export function MeshScene({
-	widthSegments = 512,
-	heightSegments = 512,
-	scale = [30, 15, 1],
-	rotation = [Math.PI * 0.5, 0, 0],
 	cameraConfig = {},
-	materialNodes = [],
+	children,
 }) {
-	const shader = useMemo(() => {
-		console.log("generating material");
-		return generateMaterial(materialNodes);
-	}, [materialNodes]);
-
-	const geometry = useMemo(() => {
-		return new PlaneGeometry(1, 1, widthSegments, heightSegments);
-	}, [widthSegments, heightSegments]);
 
 
 	const camera = useMemo(() => {
@@ -85,13 +65,7 @@ export function MeshScene({
 		<Canvas
 			camera={camera}
 		>
-			<MeshAdder
-				rotation={rotation}
-				scale={scale}
-				geometry={geometry}
-				material={shader.material}
-			/>
-			<MaterialTicker shader={shader} />
+			{children}
 		</Canvas>
 	</div>
 }

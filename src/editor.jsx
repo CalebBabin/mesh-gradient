@@ -1,6 +1,8 @@
 import { Delete, DragIndicator } from "@mui/icons-material";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { EventEmitter } from "./emitter";
+import { StartShader, StopShader } from "./shaders/StartStopUtils";
+import { compileShaders } from "./shaders/BASE";
 
 const nodeWidth = 300;
 const nodeHeight = 150;
@@ -25,17 +27,20 @@ class Node extends EventEmitter {
 	 * @type {Node | undefined}
 	 */
 	out = undefined;
-	defaultProps = {
+	deletable = true;
+
+	static defaultProps = {
 		type: "presetBigNoiseA",
 		x: 0,
-		y: 0
+		y: 0,
+		deletable: true,
 	}
 
 	constructor(props, context) {
 		super();
 		this.context = context;
 		context.nodeMap.set(this.id, this);
-		const config = Object.assign({ ...this.defaultProps }, props);
+		const config = Object.assign({ ...Node.defaultProps }, props);
 		for (const key in config) {
 			if (Object.hasOwnProperty.call(config, key)) {
 				this[key] = config[key];
@@ -98,6 +103,7 @@ class Node extends EventEmitter {
 			id: this.id,
 			in: this.in,
 			out: this.out,
+			deletable: this.deletable,
 		}
 	}
 
@@ -105,7 +111,7 @@ class Node extends EventEmitter {
 	 * deletes this node
 	 */
 	delete() {
-		if (this.deleting) return;
+		if (this.deleting || this.deletable === false) return;
 		this.context.nodeMap.delete(this.id);
 		this.broadcast('delete', this);
 		this.deleting = true;
@@ -232,7 +238,6 @@ function NodeRenderer({ node }) {
 		let mouseDown = false;
 
 		const onMouseDown = (e) => {
-			console.log(e);
 			mouseDown = true;
 			const { x, y } = getUIXY(e);
 			mouseStart.x = x;
@@ -311,7 +316,9 @@ function NodeRenderer({ node }) {
 			}}
 		>
 			<div className="flex justify-between items-center">
-				<button onClick={() => {
+				<button style={{
+					display: data.deletable === false ? 'none' : 'block',
+				}} onClick={() => {
 					node.delete();
 				}}>
 					<Delete />
@@ -331,18 +338,52 @@ function NodeRenderer({ node }) {
 	</>
 }
 
-export function EditorWithNodeContext() {
+export function EditorWithNodeContext({ onChange }) {
 	const map = useMemo(() => new Map(), []);
-	return <NodeContext.Provider value={{
-		nodeMap: map,
-	}}>
-		<Editor />
+	return <NodeContext.Provider
+		value={{
+			nodeMap: map,
+		}}
+	>
+		<Editor
+			onChange={onChange}
+		/>
 	</NodeContext.Provider>
 }
 
-function Editor() {
+function Editor({ onChange }) {
 	const [nodes, setNodes] = useState([]);
 	const context = useContext(NodeContext);
+
+	useEffect(() => {
+		let lastChange = Date.now();
+		const listener = () => {
+			const targetChange = Date.now();
+			lastChange = targetChange;
+
+			setTimeout(() => {
+				if (targetChange !== lastChange) return;
+
+				const startNode = nodes.find(node => node?.shader?.type === 'StartShader');
+				if (!startNode) {
+					console.error('error finding start node!');
+					console.log(nodes);
+				} else {
+					onChange(compileShaders(startNode));
+				}
+			}, 100);
+			onChange();
+		};
+
+		for (let i = 0; i < nodes.length; i++) {
+			nodes[i].on('connection', listener);
+		}
+		return () => {
+			for (let i = 0; i < nodes.length; i++) {
+				nodes[i].off('connection', listener);
+			}
+		}
+	}, [nodes]);
 
 	const addNode = useCallback((...args) => {
 		const newNodes = [];
@@ -379,7 +420,25 @@ function Editor() {
 	useEffect(() => {
 		const timeout = setTimeout(() => {
 			if (nodes.length > 0) return;
-			addNode(new Node({}, context), new Node({}, context), new Node({}, context));
+
+			const newNodeCount = 5;
+			const startX = (-newNodeCount / 2) * nodeWidth;
+
+			const new_nodes = [];
+			const startNode = new Node({ deletable: false, shader: new StartShader(), x: startX }, context);
+			const endNode = new Node({ deletable: false, shader: new StopShader(), x: startX + newNodeCount * nodeWidth }, context);
+			new_nodes.push(startNode, endNode);
+
+			let prevNode = startNode;
+			for (let i = 1; i < newNodeCount - 1; i++) {
+				const node = new Node({ x: startX + i * nodeWidth }, context);
+				node.connect(prevNode, node);
+				new_nodes.push(node);
+				prevNode = node;
+			}
+			endNode.connect(prevNode, endNode);
+
+			addNode(...new_nodes);
 		}, 1000);
 		return () => {
 			clearTimeout(timeout);
