@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Editor } from './editor';
+import { EditorWithNodeContext } from './editor';
 import { MeshScene } from './MeshScene';
 
 
@@ -343,7 +343,7 @@ function App() {
 	return (
 		<>
 			<MeshScene materialNodes={presetNodes} />
-			<Editor />
+			<EditorWithNodeContext />
 			<FullscreenButton hide={!visible} locked={lockUI} />
 			<Controls hide={true} locked={lockUI} setLockUI={setLockUI} />
 		</>

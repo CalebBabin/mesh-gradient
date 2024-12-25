@@ -1,152 +1,222 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import { Delete, DragIndicator } from "@mui/icons-material";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
+import { EventEmitter } from "./emitter";
+
+const nodeWidth = 300;
+const nodeHeight = 150;
+
+const SVGCanvasSize = 5000;
+const SVGCanvasSizeHalf = SVGCanvasSize / 2;
+
+const NodeContext = createContext({
+	nodeMap: new Map(),
+});
 
 let globalID = 0;
-class Node {
-	constructor(props = {
+class Node extends EventEmitter {
+	id = globalID++;
+	x = 0;
+	y = 0;
+	/**
+	 * @type {Node | undefined}
+	 */
+	in = undefined;
+	/**
+	 * @type {Node | undefined}
+	 */
+	out = undefined;
+	defaultProps = {
 		type: "presetBigNoiseA",
-	}) {
-		this.id = globalID++;
-		for (const key in props) {
-			if (Object.hasOwnProperty.call(props, key)) {
-				this[key] = props[key];
+		x: 0,
+		y: 0
+	}
+
+	constructor(props, context) {
+		super();
+		this.context = context;
+		context.nodeMap.set(this.id, this);
+		const config = Object.assign({ ...this.defaultProps }, props);
+		for (const key in config) {
+			if (Object.hasOwnProperty.call(config, key)) {
+				this[key] = config[key];
 			}
 		}
 	}
+
+	/**
+	 * @param {number} x 
+	 * @param {number} y 
+	 */
+	move(x, y) {
+		this.x = x;
+		this.y = y;
+		this.broadcast('move', { x, y });
+	}
+
+	/**
+	 * Connects one node to another
+	 * @param {Node} connect_in 
+	 * @param {Node} connect_out 
+	 */
+	connect(connect_in, connect_out, propagate = true) {
+		if (connect_in === this) {
+			if (this.out) {
+				this.out.disconnect(this, false);
+			}
+			this.out = connect_out;
+			if (propagate) connect_out.connect(this, connect_out, false);
+		} else if (connect_out === this) {
+			if (this.in) {
+				this.in.disconnect(this, false);
+			}
+			this.in = connect_in;
+			if (propagate) connect_in.connect(connect_in, this, false);
+		} else {
+			console.error('uh oh, I can\'t find myself here!');
+		}
+
+		this.broadcast('connection', this);
+	}
+	/**
+	 * @param {Node} node 
+	 */
+	disconnect(node, propagate = true) {
+		if (this.in === node) {
+			this.in = undefined;
+		}
+		if (this.out === node) {
+			this.out = undefined;
+		}
+		if (propagate) node.disconnect(this, false);
+		this.broadcast('connection', this);
+	}
+
+	getData() {
+		return {
+			x: this.x,
+			y: this.y,
+			id: this.id,
+			in: this.in,
+			out: this.out,
+		}
+	}
+
+	/**
+	 * deletes this node
+	 */
+	delete() {
+		if (this.deleting) return;
+		this.context.nodeMap.delete(this.id);
+		this.broadcast('delete', this);
+		this.deleting = true;
+	}
 }
 
-function Connector({ node, nodeX, nodeY, link = undefined }) {
-	const [targetX, setTargetX] = useState(Math.random() * 200 - 100);
-	const [targetY, setTargetY] = useState(Math.random() * 200 - 100);
+/**
+ * @typedef {object} SerializedNode
+ * @property {number} x
+ * @property {number} y
+ * @property {number} id
+ */
 
-	const [startX, setStartX] = useState(targetX);
-	const [startY, setStartY] = useState(targetY);
-
-	useEffect(() => {
-		if (link === undefined) return;
-		const listener = ({ detail }) => {
-			if (detail.id === link) {
-				setTargetX(detail.x);
-				setTargetY(detail.y);
-				setStartX(detail.x - 150);
-				setStartY(detail.y);
-			}
-		}
-		window.addEventListener('node-move', listener);
-		return () => {
-			window.removeEventListener('node-move', listener);
-		}
-	}, [link])
+/**
+ * 
+ * @param {Node} node 
+ * @returns {SerializedNode} nodeData
+ */
+function useNodeData(node) {
+	const [data, setData] = useState(node ? node.getData() : false);
 
 	useEffect(() => {
 		if (!node) return;
-		window.dispatchEvent(new CustomEvent('lineChange', {
-			detail: {
-				id: node.id,
-				action: 'add',
-				lineStart: { x: nodeX + 150, y: nodeY },
-				lineEnd: { x: targetX, y: targetY },
-			}
-		}));
+		function listener() {
+			setData(node.getData());
+		}
+		listener();
 
+		node.on('move', listener);
+		node.on('connection', listener);
+
+		const deleteListener = () => {
+			setData(false);
+		}
+		node.on('delete', deleteListener);
 		return () => {
-			window.dispatchEvent(new CustomEvent('lineChange', {
-				detail: {
-					id: node.id,
-					action: 'delete',
-				}
-			}));
+			node.off('move', listener);
+			node.off('connection', listener);
+			node.off('delete', deleteListener);
 		}
 	}, [node]);
 
-	useEffect(() => {
-		if (!node) return;
-		window.dispatchEvent(new CustomEvent('lineChange', {
-			detail: {
-				id: node.id,
-				action: 'update',
-				lineStart: { x: nodeX + 125, y: nodeY },
-				lineEnd: { x: targetX + (link === undefined ? 0 : -150), y: targetY },
-			}
-		}));
-	}, [node, targetX, targetY, nodeX, nodeY, link]);
+	return data;
+}
+
+function Line({ startX, startY, endX, endY }) {
+	const yDist = endY - startY;
+	let xDist = endX - startX;
+	const ratio = Math.abs(xDist / yDist);
+	xDist = xDist / ratio;
+	if (Number.isNaN(xDist)) xDist = 2;
+
+	return <svg
+		width={5000}
+		height={5000}
+		style={{ margin: '-2500px 0 0 -2500px' }}
+		className="absolute top-0 left-0 pointer-events-none"
+	>
+		<path
+			d={`M ${SVGCanvasSizeHalf + (startX)} ${SVGCanvasSizeHalf + (startY)} C ${SVGCanvasSizeHalf + startX + Math.abs(xDist)} ${SVGCanvasSizeHalf + (startY)} ${SVGCanvasSizeHalf + endX - Math.abs(xDist)} ${SVGCanvasSizeHalf + (endY)} ${SVGCanvasSizeHalf + (endX)} ${SVGCanvasSizeHalf + (endY)}`}
+			stroke="#ffffff"
+			strokeWidth="4"
+			strokeDasharray={10}
+			fill="none"
+		/>
+	</svg>
+}
+
+
+function Connector({ nodeA, nodeB }) {
+	const a_data = useNodeData(nodeA);
+	const b_data = useNodeData(nodeB);
 
 	return <>
-		{/* <div className={(side > 0 ? "left-full" : "right-full") + " top-1/2 absolute -m-1 w-2 h-2 bg-blue-300 hover:-m-2 hover:w-4 hover:h-4 hover:bg-blue-600"} /> */}
+		{(!b_data || !a_data) ? null : <Line
+			startX={a_data.x + nodeWidth / 2}
+			startY={a_data.y + nodeHeight / 2}
+			endX={b_data.x - nodeWidth / 2}
+			endY={b_data.y + nodeHeight / 2}
+		/>}
 		<div
-			// onMouseDown={e => {
-			// 	e.preventDefault();
-			// 	e.stopPropagation()
-			// 	setTargetMouseDown(true);
-			// 	setTargetMouseStart({ x: e.clientX, y: e.clientY });
-			// }}
-			onDrag={e => {
-				if (e.clientX === 0 && e.clientY === 0) return;
-				setTargetX(e.clientX - window.innerWidth / 2);
-				setTargetY(e.clientY - window.innerHeight / 2);
-			}}
 			onDragStart={e => {
-				setTargetX(e.clientX - window.innerWidth / 2);
-				setTargetY(e.clientY - window.innerHeight / 2);
-				e.dataTransfer.setData('text/plain', node.id);
-				e.dataTransfer.dropEffect = 'move';
-			}}
-			onDragEnd={e => {
-				setStartX(e.clientX - window.innerWidth / 2);
-				setStartY(e.clientY - window.innerHeight / 2);
+				e.dataTransfer.setData('text/plain', nodeA.id);
 			}}
 			draggable={true}
 			style={{
-				transform: 'translate(' + (startX) + 'px,' + (startY) + 'px)',
+				transform: 'translate(' + (a_data.x + nodeWidth / 2) + 'px,' + (a_data.y + nodeHeight / 2) + 'px)',
 			}}
 			data-connector={true}
 			className="absolute z-20 top-1/2 left-1/2 -m-1 w-2 h-2 bg-blue-300 hover:-m-2 hover:w-4 hover:h-4 hover:bg-blue-600"
 		/>
-	</>
+	</>;
 }
 
-const NODE_SIZE_CLASS = ` w-64 -ml-32 h-32 -mt-16`;
-function NodeRenderer({ node, deleteNode }) {
-	const [x, setX] = useState(0);
-	const [y, setY] = useState(0);
+/**
+ * @param {Node} node
+ */
+function NodeRenderer({ node }) {
+	const data = useNodeData(node);
+	const { nodeMap } = useContext(NodeContext);
 	const [outlined, setOutlined] = useState(false); // used for drag&drop hover effects
 	const [mouseDown, setMouseDown] = useState(false);
-	const [mouseStart, setMouseStart] = useState({ x: y, y: 0 });
-	const [link, setLink] = useState(undefined);
-
-	useEffect(() => {
-		const listener = ({ detail }) => {
-			if (detail.id === node.id) {
-				setLink(detail.targetId);
-			} else if (detail.targetId === link) {
-				setLink(undefined);
-			}
-		}
-		window.addEventListener('node-link', listener);
-		return () => {
-			window.removeEventListener('node-link', listener);
-		}
-	}, [link, node?.id]);
-
-	useEffect(() => {
-		console.log(node.id, 'linked to', link);
-	}, [link, node]);
+	const [mouseStart, setMouseStart] = useState({ x: data.y, y: 0 });
 
 	useEffect(() => {
 		if (!mouseDown) return;
 		const moveListener = (e) => {
 			e.preventDefault();
-			const newX = x + (e.clientX - mouseStart.x);
-			const newY = y + (e.clientY - mouseStart.y);
-			setX(newX);
-			setY(newY);
-
-			window.dispatchEvent(new CustomEvent('node-move', {
-				detail: {
-					id: node.id,
-					x: newX,
-					y: newY,
-				}
-			}))
+			const newX = data.x + (e.clientX - mouseStart.x);
+			const newY = data.y + (e.clientY - mouseStart.y);
+			node.move(newX, newY);
 		}
 		window.addEventListener('mousemove', moveListener);
 
@@ -163,21 +233,17 @@ function NodeRenderer({ node, deleteNode }) {
 	}, [mouseDown, mouseStart]);
 
 	return <>
+		<Connector nodeA={node} nodeB={data.out} />
 		<div
-			onMouseDown={e => {
-				setMouseDown(true);
-				setMouseStart({ x: e.clientX, y: e.clientY });
-				e.preventDefault();
-			}}
 			onDrop={e => {
-				const data = parseInt(e.dataTransfer.getData("text/plain"), 10);
-				if (data !== node.id) {
-					window.dispatchEvent(new CustomEvent('node-link', {
-						detail: {
-							id: data,
-							targetId: node.id,
-						}
-					}))
+				const id = parseInt(e.dataTransfer.getData("text/plain"), 10);
+				if (id !== node.id) {
+					if (nodeMap.has(id)) {
+						node.connect(nodeMap.get(id), node);
+					} else {
+						console.log('invalid target', id, nodeMap);
+					}
+
 				} else {
 					console.log('cannot link node to self!', node.id);
 				}
@@ -191,129 +257,68 @@ function NodeRenderer({ node, deleteNode }) {
 			onDragExit={e => {
 				setOutlined(false);
 			}}
+			className={"absolute select-none z-10 box-border bg-black rounded-lg border-white/80 border-2 text-white p-2"}
 			style={{
-				transform: 'translate(' + x + 'px, ' + y + 'px)',
+				transform: 'translate(' + data.x + 'px, ' + data.y + 'px)',
 				outline: outlined ? '2px dashed blue' : 'none',
+				width: nodeWidth + 'px',
+				marginLeft: -nodeWidth / 2 + 'px',
+				height: nodeHeight + 'px',
+				marginHeight: -nodeHeight / 2 + 'px',
 			}}
-			className={"absolute z-10 box-border bg-black rounded-lg border-white/80 border-2 text-white p-2" + NODE_SIZE_CLASS}
 		>
-			<div className="cursor-move">
-				move
+			<div className="flex justify-between items-center">
+				<button onClick={() => {
+					node.delete();
+				}}>
+					<Delete />
+				</button>
+				<span className="text-white/50 font-black">{node.id}</span>
+				<button
+					className="cursor-move"
+					onMouseDown={e => {
+						setMouseDown(true);
+						setMouseStart({ x: e.clientX, y: e.clientY });
+						e.preventDefault();
+					}}
+				>
+					<DragIndicator />
+				</button>
 			</div>
 			Node!
 		</div>
-		<Connector node={node} link={link} nodeX={x} nodeY={y} />
 	</>
 }
 
-function Line(props) {
-	const [startX, setStartX] = useState(props.startX ?? 0);
-	const [startY, setStartY] = useState(props.startY ?? 0);
-	const [endX, setEndX] = useState(props.endX ?? 0);
-	const [endY, setEndY] = useState(props.endY ?? 0);
-
-	useEffect(() => {
-		console.log('adding line', props.id);
-		const lineChangeListener = (e) => {
-			const { id, action, lineStart, lineEnd } = e.detail;
-			if (id !== props.id || action !== 'update') return;
-			setStartX(lineStart.x ?? startX);
-			setStartY(lineStart.y ?? startY);
-			setEndX(lineEnd.x ?? endX);
-			setEndY(lineEnd.y ?? endY);
-		}
-
-		window.addEventListener('lineChange', lineChangeListener);
-		return () => {
-			console.log('removing line', props.id);
-			window.removeEventListener('lineChange', lineChangeListener);
-		}
-	}, [props.id]);
-
-	const yDist = endY - startY;
-	let xDist = endX - startX;
-	const ratio = Math.abs(xDist / yDist);
-	xDist = xDist / ratio;
-	if (Number.isNaN(xDist)) xDist = 2;
-
-	return <path
-		d={`M ${2500 + (startX)} ${2500 + (startY)} C ${2500 + startX + Math.abs(xDist)} ${2500 + (startY)} ${2500 + endX - Math.abs(xDist)} ${2500 + (endY)} ${2500 + (endX)} ${2500 + (endY)}`}
-		stroke="#ffffff"
-		strokeWidth="4"
-		strokeDasharray={10}
-		fill="none"
-	/>
+export function EditorWithNodeContext() {
+	const map = useMemo(() => new Map(), []);
+	return <NodeContext.Provider value={{
+		nodeMap: map,
+	}}>
+		<Editor />
+	</NodeContext.Provider>
 }
 
-function LineComposer() {
-	const [lines, setLines] = useState(new Array());
-
-	useEffect(() => {
-		const lineMap = new Map();
-		lines.forEach(line => {
-			lineMap.set(line.id, true);
-		})
-
-		let newLines = Array.from(lines);
-
-		const lineChangeListener = (e) => {
-			const { id, action, lineStart, lineEnd } = e.detail;
-			const lineId = Number(id);
-
-			switch (action) {
-				case 'delete': {
-					for (let i = 0; i < newLines.length; i++) {
-						if (newLines[i].id === lineId) {
-							newLines.splice(i, 1);
-							break;
-						}
-					}
-					lineMap.delete(lineId);
-					setLines(newLines);
-				} break;
-				default:
-					if (!lineMap.has(lineId)) {
-						lineMap.set(lineId, true);
-						newLines.push({
-							id: lineId,
-							start: lineStart,
-							end: lineEnd,
-						})
-						setLines(newLines);
-					}
-					break;
-			}
-		}
-
-		window.addEventListener('lineChange', lineChangeListener);
-		return () => {
-			window.removeEventListener('lineChange', lineChangeListener);
-		}
-	}, [lines]);
-
-	return <svg width={5000} height={5000} style={{ margin: '-2500px 0 0 -2500px' }} className="absolute top-0 left-0 pointer-events-none">
-		{lines.map((line) => <Line
-			key={line.id}
-			id={line.id}
-			startX={line.start.x}
-			startY={line.start.y}
-			endX={line.end.x}
-			endY={line.end.y}
-		/>)}
-	</svg>
-}
-
-export function Editor({ className }) {
+function Editor() {
 	const [nodes, setNodes] = useState([]);
+	const context = useContext(NodeContext);
 
-	const addNode = useMemo(() => (node) => {
-		setNodes([...nodes, new Node(node)]);
+	const addNode = useCallback((...args) => {
+		const newNodes = [];
+		for (let i = 0; i < args.length; i++) {
+			newNodes.push(args[i]);
+		}
+		if (args.length === 0) {
+			newNodes.push(new Node({}, context));
+		}
+		setNodes([...nodes, ...newNodes]);
 	}, [nodes]);
 
-	const deleteNode = useMemo(() => (node) => {
-		const newNodes = new Array(nodes.length - 1);
+	const deleteNode = useCallback((node) => {
+		const newNodes = new Array();
 		for (let i = 0; i < nodes.length; i++) {
-			if (nodes[i].id !== node.id) newNodes.push(node);
+			if (nodes[i].id !== node.id) newNodes.push(nodes[i]);
+			else nodes[i].delete();
 		}
 		setNodes(newNodes);
 	}, [nodes]);
@@ -324,15 +329,39 @@ export function Editor({ className }) {
 			renderedNodes.push(<NodeRenderer
 				key={nodes[i].id}
 				addNode={addNode}
-				deleteNode={deleteNode}
 				node={nodes[i]}
 			/>)
 		}
 		return renderedNodes;
-	}, [nodes]);
+	}, [nodes, addNode]);
 
-	return <div className={"absolute top-1/2 left-1/2" + ' ' + className}>
-		<LineComposer />
+	useEffect(() => {
+		const timeout = setTimeout(() => {
+			if (nodes.length > 0) return;
+			addNode(new Node({}, context), new Node({}, context), new Node({}, context));
+		}, 1000);
+		return () => {
+			clearTimeout(timeout);
+		}
+	}, [addNode]);
+
+	useEffect(() => {
+		const listenNodes = [];
+		function listener(node) {
+			deleteNode(node);
+		}
+		for (let i = 0; i < nodes.length; i++) {
+			listenNodes.push(nodes[i]);
+			nodes[i].on('delete', listener);
+		}
+		return () => {
+			for (let i = 0; i < listenNodes.length; i++) {
+				listenNodes[i].off('delete', listener);
+			}
+		}
+	}, [nodes, deleteNode]);
+
+	return <div className={"absolute top-1/2 left-1/2"}>
 		{renderedNodes}
 	</div>
-}
+};
