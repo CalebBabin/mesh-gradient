@@ -1,5 +1,5 @@
 import { Delete, DragIndicator } from "@mui/icons-material";
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { EventEmitter } from "./emitter";
 
 const nodeWidth = 300;
@@ -200,6 +200,20 @@ function Connector({ nodeA, nodeB }) {
 	</>;
 }
 
+const getUIXY = (e) => {
+	if (e.targetTouches) {
+		return {
+			x: e.targetTouches[0].clientX,
+			y: e.targetTouches[0].clientY,
+		}
+	} else {
+		return {
+			x: e.clientX,
+			y: e.clientY,
+		}
+	}
+}
+
 /**
  * @param {Node} node
  */
@@ -207,20 +221,44 @@ function NodeRenderer({ node }) {
 	const data = useNodeData(node);
 	const { nodeMap } = useContext(NodeContext);
 	const [outlined, setOutlined] = useState(false); // used for drag&drop hover effects
-	const [mouseDown, setMouseDown] = useState(false);
-	const [mouseStart, setMouseStart] = useState({ x: data.y, y: 0 });
+	const handleRef = useRef();
 
 	useEffect(() => {
-		if (!mouseDown) return;
-		const moveListener = (e) => {
+		if (!handleRef.current) return;
+		const handle = handleRef.current;
+
+		const nodeStart = { x: 0, y: 0 }
+		const mouseStart = { x: 0, y: 0 };
+		let mouseDown = false;
+
+		const onMouseDown = (e) => {
+			console.log(e);
+			mouseDown = true;
+			const { x, y } = getUIXY(e);
+			mouseStart.x = x;
+			mouseStart.y = y;
+			nodeStart.x = node.x;
+			nodeStart.y = node.y;
 			e.preventDefault();
-			const newX = data.x + (e.clientX - mouseStart.x);
-			const newY = data.y + (e.clientY - mouseStart.y);
+		};
+
+		handle.addEventListener('mousedown', onMouseDown);
+		handle.addEventListener('touchstart', onMouseDown);
+
+		const moveListener = (e) => {
+			if (!mouseDown) return;
+			const { x, y } = getUIXY(e);
+			e.preventDefault();
+			const newX = nodeStart.x + (x - mouseStart.x);
+			const newY = nodeStart.y + (y - mouseStart.y);
 			node.move(newX, newY);
 		}
 		window.addEventListener('mousemove', moveListener);
+		handle.addEventListener('touchmove', moveListener);
 
-		const dehookListener = () => { setMouseDown(false) };
+		const dehookListener = () => { mouseDown = false };
+
+		handle.addEventListener('touchend', dehookListener);
 		window.addEventListener('mouseup', dehookListener);
 		window.addEventListener('blur', dehookListener);
 
@@ -229,8 +267,13 @@ function NodeRenderer({ node }) {
 			window.removeEventListener('mouseup', dehookListener);
 			window.removeEventListener('blur', dehookListener);
 
+			if (!handleRef.current) return;
+			handle.removeEventListener('mousedown', onMouseDown);
+			handle.removeEventListener('touchstart', onMouseDown);
+			handle.removeEventListener('touchend', dehookListener);
+			handle.removeEventListener('touchmove', moveListener);
 		}
-	}, [mouseDown, mouseStart]);
+	}, [handleRef]);
 
 	return <>
 		<Connector nodeA={node} nodeB={data.out} />
@@ -276,16 +319,14 @@ function NodeRenderer({ node }) {
 				<span className="text-white/50 font-black">{node.id}</span>
 				<button
 					className="cursor-move"
-					onMouseDown={e => {
-						setMouseDown(true);
-						setMouseStart({ x: e.clientX, y: e.clientY });
-						e.preventDefault();
-					}}
+					ref={handleRef}
 				>
 					<DragIndicator />
 				</button>
 			</div>
-			Node!
+			<div className="text-center my-4">
+				Node!
+			</div>
 		</div>
 	</>
 }
