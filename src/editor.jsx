@@ -175,7 +175,7 @@ function Line({ startX, startY, endX, endY }) {
 		<path
 			d={`M ${SVGCanvasSizeHalf + (startX)} ${SVGCanvasSizeHalf + (startY)} C ${SVGCanvasSizeHalf + startX + Math.abs(xDist)} ${SVGCanvasSizeHalf + (startY)} ${SVGCanvasSizeHalf + endX - Math.abs(xDist)} ${SVGCanvasSizeHalf + (endY)} ${SVGCanvasSizeHalf + (endX)} ${SVGCanvasSizeHalf + (endY)}`}
 			stroke="#000000"
-			strokeWidth="4"
+			strokeWidth="2"
 			fill="none"
 		/>
 		<path
