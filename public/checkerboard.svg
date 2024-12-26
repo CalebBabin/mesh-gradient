@@ -1,0 +1,16 @@
+<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
+	<defs>
+		<pattern id="checkerboard" patternUnits="userSpaceOnUse" width="20" height="20">
+			<rect width="10" height="10" fill="white" />
+			<rect x="10" y="10" width="10" height="10" fill="white" />
+		</pattern>
+	</defs>
+	<rect width="100" height="100" fill="url(#checkerboard)">
+		<animateTransform attributeName="transform" type="translate" from="0,0" to="-20,-20"
+			dur="5s" repeatCount="indefinite" />
+	</rect>
+	<rect width="100" height="100" fill="url(#checkerboard)">
+		<animateTransform attributeName="transform" type="translate" from="20,20" to="0,0"
+			dur="5s" repeatCount="indefinite" />
+	</rect>
+</svg>

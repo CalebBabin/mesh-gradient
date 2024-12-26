@@ -16,7 +16,7 @@ const NodeContext = createContext({
 });
 
 let globalID = 0;
-class Node extends EventEmitter {
+export class Node extends EventEmitter {
 	id = globalID++;
 	x = 0;
 	y = 0;
@@ -41,11 +41,22 @@ class Node extends EventEmitter {
 		this.context = context;
 		context.nodeMap.set(this.id, this);
 		const config = Object.assign({ ...Node.defaultProps }, props);
-		for (const key in config) {
-			if (Object.hasOwnProperty.call(config, key)) {
-				this[key] = config[key];
-			}
-		}
+
+
+		this.x = config.x;
+		this.y = config.y;
+		this.deletable = config.deletable;
+		this.shader = config.shader;
+		this.in = config.in;
+		this.out = config.out;
+
+		config.shader.on('recompile', () => {
+			this.recompile();
+		})
+	}
+
+	recompile() {
+		this.broadcast('recompile');
 	}
 
 	/**
@@ -114,6 +125,9 @@ class Node extends EventEmitter {
 	delete() {
 		if (this.deleting || this.deletable === false) return;
 		this.context.nodeMap.delete(this.id);
+		if (this.in) {
+			this.in.disconnect(this, false);
+		}
 		this.broadcast('delete', this);
 		this.deleting = true;
 	}
@@ -131,7 +145,7 @@ class Node extends EventEmitter {
  * @param {Node} node 
  * @returns {SerializedNode} nodeData
  */
-function useNodeData(node) {
+export function useNodeData(node) {
 	const [data, setData] = useState(node ? node.getData() : false);
 
 	useEffect(() => {
@@ -289,7 +303,7 @@ function NodeRenderer({ node }) {
 	}, [handleRef]);
 
 	return <>
-		{data?.shader?.connectOut && data.out ? <Connector
+		{data?.shader?.connectOut ? <Connector
 			nodeA={node}
 			nodeB={data.out}
 		/> : null}
@@ -320,7 +334,7 @@ function NodeRenderer({ node }) {
 			onDragExit={e => {
 				setOutlined(false);
 			}}
-			className={"absolute select-none z-10 box-border bg-black rounded-lg border-white/80 border-2 text-white p-2"}
+			className={"absolute z-10 box-border bg-black rounded-lg border-white/80 border-2 text-white p-2"}
 			style={{
 				transform: 'translate(' + data.x + 'px, ' + data.y + 'px)',
 				outline: outlined ? '2px dashed blue' : 'none',
@@ -330,7 +344,7 @@ function NodeRenderer({ node }) {
 				marginHeight: -nodeHeight / 2 + 'px',
 			}}
 		>
-			<div className="flex justify-between items-center">
+			<div className="flex justify-between items-center relative z-10">
 				<button style={{
 					display: data.deletable === false ? 'none' : 'block',
 				}} onClick={() => {
@@ -346,9 +360,7 @@ function NodeRenderer({ node }) {
 					<DragIndicator />
 				</button>
 			</div>
-			<div className="text-center my-4">
-				Node!
-			</div>
+			{node?.shader?.UI ? <node.shader.UI node={node} shader={node.shader} /> : null}
 		</div>
 	</>
 }
@@ -373,32 +385,25 @@ function Editor({ onChange }) {
 	useEffect(() => {
 		if (nodes.length === 0) return;
 
-		let lastChange = Date.now();
-		const listener = () => {
-			const targetChange = Date.now();
-			lastChange = targetChange;
+		const timeout = setTimeout(() => {
+			const startNode = nodes.find(node => node?.shader?.type === 'StartShader');
+			if (!startNode) {
+				console.error('error finding start node!');
+				console.log(nodes);
+			} else {
+				onChange(compileShaders(startNode));
 
-			setTimeout(() => {
-				if (targetChange !== lastChange) return;
-
-				const startNode = nodes.find(node => node?.shader?.type === 'StartShader');
-				if (!startNode) {
-					console.error('error finding start node!');
-					console.log(nodes);
-				} else {
-					onChange(compileShaders(startNode));
+				const finalNodes = [];
+				let node = startNode;
+				while (node.out) {
+					finalNodes.push(node.out);
+					node = node.out;
 				}
-			}, 500);
-			onChange();
-		};
-
-		for (let i = 0; i < nodes.length; i++) {
-			nodes[i].on('connection', listener);
-		}
-		return () => {
-			for (let i = 0; i < nodes.length; i++) {
-				nodes[i].off('connection', listener);
+				console.log(finalNodes);
 			}
+		}, 500);
+		return () => {
+			clearTimeout(timeout);
 		}
 	}, [nodes]);
 
@@ -416,7 +421,7 @@ function Editor({ onChange }) {
 	const deleteNode = useCallback((node) => {
 		const newNodes = new Array();
 		for (let i = 0; i < nodes.length; i++) {
-			if (nodes[i].id !== node.id) newNodes.push(nodes[i]);
+			if (nodes[i] !== node) newNodes.push(nodes[i]);
 			else nodes[i].delete();
 		}
 		setNodes(newNodes);
@@ -448,7 +453,7 @@ function Editor({ onChange }) {
 
 			let prevNode = startNode;
 			for (let i = 1; i < newNodeCount - 1; i++) {
-				const node = new Node({ x: startX + i * nodeWidth, shader: new CheckerboardShader() }, context);
+				const node = new Node({ x: startX + i * nodeWidth + nodeWidth / 2, shader: new CheckerboardShader() }, context);
 				node.connect(prevNode, node);
 				new_nodes.push(node);
 				prevNode = node;
@@ -460,20 +465,25 @@ function Editor({ onChange }) {
 		return () => {
 			clearTimeout(timeout);
 		}
-	}, [addNode]);
+	}, [nodes, addNode]);
 
 	useEffect(() => {
 		const listenNodes = [];
 		function listener(node) {
 			deleteNode(node);
 		}
+		function recompileListener() {
+			setNodes([...nodes]);
+		}
 		for (let i = 0; i < nodes.length; i++) {
 			listenNodes.push(nodes[i]);
 			nodes[i].on('delete', listener);
+			nodes[i].on('recompile', recompileListener);
 		}
 		return () => {
 			for (let i = 0; i < listenNodes.length; i++) {
 				listenNodes[i].off('delete', listener);
+				nodes[i].off('recompile', recompileListener);
 			}
 		}
 	}, [nodes, deleteNode]);

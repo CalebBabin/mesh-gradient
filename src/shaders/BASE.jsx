@@ -3,11 +3,20 @@ import { EventEmitter } from "../emitter";
 import GLSL_colorSpaces from './colorSpaces.glsl?raw';
 import GLSL_simplexNoise3D from './simplex.glsl?raw';
 
+function UI({ node, shader }) {
+	return <div className="absolute inset-0 bg-red flex justify-center items-center text-center">
+		<span>
+			base node
+		</span>
+	</div>;
+};
+
 export class BaseShader extends EventEmitter {
 	_data = {};
 	connectIn = true;
 	connectOut = true;
-	
+	UI = UI
+
 	get data() {
 		return this._data;
 	}
@@ -21,6 +30,9 @@ export class BaseShader extends EventEmitter {
 		this.data = data;
 	}
 
+	recompile() {
+		this.broadcast('recompile');
+	}
 	compile() {
 		return { fragment: '', vertex: '' };
 	}
