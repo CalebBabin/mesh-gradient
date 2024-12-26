@@ -5,6 +5,9 @@ import GLSL_simplexNoise3D from './simplex.glsl?raw';
 
 export class BaseShader extends EventEmitter {
 	_data = {};
+	connectIn = true;
+	connectOut = true;
+	
 	get data() {
 		return this._data;
 	}
@@ -83,9 +86,16 @@ export function compileShaders(startNode) {
 	};
 
 	let currentNode = startNode;
+	const recordedNodes = [];
 	while (currentNode) {
 		const node = currentNode;
 		currentNode = node.out;
+
+		if (recordedNodes.includes(node)) {
+			console.error('Cyclic dependency detected');
+			break;
+		}
+		recordedNodes.push(node);
 
 		if (!node.shader) continue;
 		try {

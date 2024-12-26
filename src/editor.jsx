@@ -31,7 +31,6 @@ class Node extends EventEmitter {
 	deletable = true;
 
 	static defaultProps = {
-		type: "presetBigNoiseA",
 		x: 0,
 		y: 0,
 		deletable: true,
@@ -104,6 +103,7 @@ class Node extends EventEmitter {
 			id: this.id,
 			in: this.in,
 			out: this.out,
+			shader: this.shader,
 			deletable: this.deletable,
 		}
 	}
@@ -289,9 +289,10 @@ function NodeRenderer({ node }) {
 	}, [handleRef]);
 
 	return <>
-		<Connector nodeA={node} nodeB={data.out} />
+		{data?.shader?.connectOut ? <Connector nodeA={node} nodeB={data.out} /> : null}
 		<div
 			onDrop={e => {
+				if (!data?.shader?.connectIn) return;
 				const id = parseInt(e.dataTransfer.getData("text/plain"), 10);
 				if (id !== node.id) {
 					if (nodeMap.has(id)) {
@@ -306,6 +307,9 @@ function NodeRenderer({ node }) {
 			}}
 			onDragEnter={e => {
 				e.preventDefault();
+				if (!data?.shader?.connectIn) {
+					e.dataTransfer.dropEffect = 'none';
+				}
 			}}
 			onDragOver={e => {
 				e.preventDefault();
