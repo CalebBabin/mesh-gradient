@@ -289,7 +289,10 @@ function NodeRenderer({ node }) {
 	}, [handleRef]);
 
 	return <>
-		{data?.shader?.connectOut ? <Connector nodeA={node} nodeB={data.out} /> : null}
+		{data?.shader?.connectOut && data.out ? <Connector
+			nodeA={node}
+			nodeB={data.out}
+		/> : null}
 		<div
 			onDrop={e => {
 				if (!data?.shader?.connectIn) return;
