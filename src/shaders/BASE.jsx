@@ -2,6 +2,8 @@ import { DoubleSide, ShaderMaterial } from "three";
 import { EventEmitter } from "../emitter";
 import GLSL_colorSpaces from './colorSpaces.glsl?raw';
 import GLSL_simplexNoise3D from './simplex.glsl?raw';
+import { useEffect, useState } from "react";
+import { list } from "postcss";
 
 function UI({ node, shader }) {
 	return <div className="absolute inset-0 bg-red flex justify-center items-center text-center">
@@ -10,6 +12,24 @@ function UI({ node, shader }) {
 		</span>
 	</div>;
 };
+
+export const useShaderData = (shader) => {
+	const [data, setData] = useState({...shader.data});
+	useEffect(() => {
+		const listener = () => {
+			setData({...shader.data});
+		};
+		listener();
+		shader.on('update', listener);
+		shader.on('recompile', listener);
+		return () => {
+			shader.off('update', listener);
+			shader.off('recompile', listener);
+		};
+	}, [shader]);
+	return data;
+}
+
 
 export class BaseShader extends EventEmitter {
 	_data = {};
@@ -23,6 +43,7 @@ export class BaseShader extends EventEmitter {
 	set data(newData = {}) {
 		Object.assign(this._data, newData);
 		this.broadcast('update', this._data);
+		this.recompile();
 	}
 
 	constructor(data) {
@@ -70,18 +91,13 @@ export function compileShaders(startNode) {
 			} else {
 				vUv = vec2(uv.x * (viewportSize.x/viewportSize.y), uv.y);
 			}
-
 			vUv *= vec2(uScale);
 			originalUv = vec2(uv.x, uv.y);
-
-
+			vec3 offset = vec3(0.0);
 			vertexNoise = vec2(
 				simplexNoise3D(vec3(vUv.x * 0.25, vUv.y * 1.0, (uTime / 30000.0) * 0.3)),
 				simplexNoise3D(vec3(vUv.x * 0.25, vUv.y * 0.25, (uTime / 30000.0) * 0.5))
 			);
-
-
-			gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 	`;
 
 
@@ -123,7 +139,10 @@ export function compileShaders(startNode) {
 	}
 
 	compiledFrag += '\n}';
-	compiledVert += '\n}';
+	compiledVert += `
+		gl_Position = projectionMatrix * modelViewMatrix * vec4(position + vec3(offset.x, offset.z, offset.y), 1.0);
+	}
+	`;
 
 	return {
 		material: new ShaderMaterial({

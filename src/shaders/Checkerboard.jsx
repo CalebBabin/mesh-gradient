@@ -1,7 +1,10 @@
+import { useEffect, useState } from "react";
 import { useNodeData } from "../editor";
 import { trailZero } from "../utils";
-import { BaseShader } from "./BASE";
+import { BaseShader, useShaderData } from "./BASE";
 /** @typedef {import('../editor.jsx').Node} Node */
+
+
 /**
  * 
  * @param {Node} node
@@ -9,12 +12,33 @@ import { BaseShader } from "./BASE";
  * @returns 
  */
 function UI({ node, shader }) {
+	const shaderData = useShaderData(shader);
+
+	const maxBuffer = 100;
+
+	const [bufferX, setBufferX] = useState(shaderData?.detail?.x || maxBuffer / 2);
+	const [bufferY, setBufferY] = useState(shaderData?.detail?.y || maxBuffer / 2);
+	const [bufferDouble, setBufferDouble] = useState(shaderData?.doubleChecker || 0);
+	const [lockAspect, setLockAspect] = useState(true);
+
+	useEffect(() => {
+		shader.data = {
+			detail: {
+				x: Math.pow(bufferX / maxBuffer, 8) * 100,
+				y: Math.pow(bufferY / maxBuffer, 8) * 100
+			},
+			doubleChecker: Math.round(bufferDouble),
+		};
+		node.recompile();
+	}, [bufferX, bufferY, bufferDouble]);
+
+
 	return <div className="absolute border-[silver+1rem+solid] inset-0 bg-red flex flex-col justify-center items-center text-center">
 		<div style={{
 			backgroundImage: 'url(/checkerboard.svg)',
 			backgroundSize: ((node.id + 2) % 3 === 0 ? '512px' : '1024px'),
-		}} className={"absolute inset-0 " + (node.id % 2 === 0 ? "rotate-180" : "")} />
-		<div className="absolute inset-0 bottom-[70%] bg-black opacity-20" />
+		}} className={"absolute inset-0 pointer-events-none -z-20 " + (node.id % 2 === 0 ? "rotate-180" : "")} />
+		<div className="absolute inset-0 pointer-events-none -z-10  bg-black opacity-60" />
 		<span className="relative z-10 font-thin text-3xl text-cyan-100">
 			checkerboard
 		</span>
@@ -22,8 +46,70 @@ function UI({ node, shader }) {
 			shader.randomize();
 			node.recompile();
 		}} className="relative z-10 font-thin">
-			checkerboard
+			random
 		</button>
+		<label>
+			lock aspect ratio: <input
+				type="checkbox"
+				checked={lockAspect}
+				onChange={e => {
+					setLockAspect(!!e.target.checked);
+				}}
+			/>
+		</label>
+		<div className="field-row w-full">
+			<label>x:</label>
+			<label>0.1</label>
+			<input
+				className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+				type="range"
+				min="0"
+				max={maxBuffer}
+				value={bufferX}
+				onChange={e => {
+					setBufferX(e.target.value);
+					if (lockAspect) {
+						setBufferY(e.target.value);
+					}
+				}}
+			/>
+			<label>maxBuffer</label>
+		</div>
+		<div className="field-row w-full">
+			<label>y:</label>
+			<label>0.1</label>
+			<input
+				className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+				type="range"
+				min={0}
+				step={1}
+				max={maxBuffer}
+				value={bufferY}
+				onChange={e => {
+					setBufferY(e.target.value);
+					if (lockAspect) {
+						setBufferX(e.target.value);
+					}
+				}}
+			/>
+			<label>{maxBuffer}</label>
+		</div>
+		<div className="field-row w-full">
+			<label>double:</label>
+			<label>0</label>
+			<input
+				className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+				type="range"
+				min={0}
+				step={1}
+				max={100}
+				value={bufferDouble}
+				onChange={e => {
+					setBufferDouble(e.target.value);
+				}}
+			/>
+			<label>20</label>
+		</div>
 	</div>;
 };
 
@@ -40,7 +126,7 @@ export class CheckerboardShader extends BaseShader {
 	constructor(data = {}) {
 		super(data);
 
-		this.data = Object.assign(this.defaults, this.data);
+		this.data = Object.assign({ ...this.defaults }, this.data);
 	}
 
 	randomize() {
@@ -74,9 +160,9 @@ export class CheckerboardShader extends BaseShader {
 					if (
 						mod(
 							floor(
-								(vUv.x + slowTime * speed.x) * ${trailZero(data.detail.x)} * 10.0 * 10.0
+								(vUv.x + slowTime * speed.x) * ${trailZero(data.detail.x)} * ${trailZero(data.doubleChecker)} * 10.0
 							) + floor(
-								(vUv.y + slowTime * speed.y) * ${trailZero(data.detail.y)} * 10.0 * 10.0
+								(vUv.y + slowTime * speed.y) * ${trailZero(data.detail.y)} * ${trailZero(data.doubleChecker)} * 10.0
 							),
 							2.0
 						) == 0.0) {

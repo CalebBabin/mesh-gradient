@@ -4,9 +4,10 @@ import { EventEmitter } from "./emitter";
 import { StartShader, StopShader } from "./shaders/StartStopUtils";
 import { compileShaders } from "./shaders/BASE";
 import { CheckerboardShader } from "./shaders/Checkerboard";
+import { BubbleShader } from "./shaders/bubbles";
 
 const nodeWidth = 300;
-const nodeHeight = 150;
+const nodeHeight = 200;
 
 const SVGCanvasSize = 5000;
 const SVGCanvasSizeHalf = SVGCanvasSize / 2;
@@ -334,10 +335,10 @@ function NodeRenderer({ node }) {
 			onDragExit={e => {
 				setOutlined(false);
 			}}
-			className={"absolute z-10 box-border bg-black rounded-lg border-white/80 border-2 text-white p-2"}
+			className={"absolute z-10 box-border bg-black rounded-lg overflow-hidden outline outline-[silver] outline-4 text-white p-2"}
 			style={{
 				transform: 'translate(' + data.x + 'px, ' + data.y + 'px)',
-				outline: outlined ? '2px dashed blue' : 'none',
+				outline: outlined ? '2px dashed blue' : '',
 				width: nodeWidth + 'px',
 				marginLeft: -nodeWidth / 2 + 'px',
 				height: nodeHeight + 'px',
@@ -399,9 +400,8 @@ function Editor({ onChange }) {
 					finalNodes.push(node.out);
 					node = node.out;
 				}
-				console.log(finalNodes);
 			}
-		}, 500);
+		}, 100);
 		return () => {
 			clearTimeout(timeout);
 		}
@@ -443,22 +443,42 @@ function Editor({ onChange }) {
 		const timeout = setTimeout(() => {
 			if (nodes.length > 0) return;
 
-			const newNodeCount = 5;
-			const startX = (-newNodeCount / 2) * nodeWidth;
+			const maxNodeCount = 5;
+			const tempNodeWidth = nodeWidth + 50
+			const startX = (-maxNodeCount / 2) * tempNodeWidth + tempNodeWidth / 2;
 
+			let nodeCount = 0;
 			const new_nodes = [];
-			const startNode = new Node({ deletable: false, shader: new StartShader(), x: startX }, context);
-			const endNode = new Node({ deletable: false, shader: new StopShader(), x: startX + newNodeCount * nodeWidth }, context);
-			new_nodes.push(startNode, endNode);
+			const startNode = new Node({ deletable: false, shader: new StartShader(), x: startX + (nodeCount++) * tempNodeWidth }, context);
+			new_nodes.push(startNode);
 
-			let prevNode = startNode;
-			for (let i = 1; i < newNodeCount - 1; i++) {
-				const node = new Node({ x: startX + i * nodeWidth + nodeWidth / 2, shader: new CheckerboardShader() }, context);
-				node.connect(prevNode, node);
-				new_nodes.push(node);
-				prevNode = node;
-			}
-			endNode.connect(prevNode, endNode);
+			const checkerNode = new Node({
+				x: startX + (nodeCount++) * tempNodeWidth,
+				shader: new CheckerboardShader()
+			}, context);
+			checkerNode.connect(startNode, checkerNode);
+			new_nodes.push(checkerNode);
+
+
+			const bubbleNode = new Node({
+				x: startX + (nodeCount++) * tempNodeWidth,
+				shader: new BubbleShader(),
+			}, context);
+			bubbleNode.connect(checkerNode, bubbleNode);
+			new_nodes.push(bubbleNode);
+
+			
+			const bubbleNode2 = new Node({
+				x: startX + (nodeCount++) * tempNodeWidth,
+				shader: new BubbleShader(),
+			}, context);
+			bubbleNode2.connect(bubbleNode, bubbleNode2);
+			new_nodes.push(bubbleNode2);
+
+			const endNode = new Node({ deletable: false, shader: new StopShader(), x: startX + (nodeCount++) * tempNodeWidth }, context);
+			endNode.connect(bubbleNode2, endNode);
+
+			new_nodes.push(endNode);
 
 			addNode(...new_nodes);
 		}, 1000);

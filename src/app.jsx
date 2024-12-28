@@ -49,7 +49,7 @@ function NumberWrapper({ children }) {
 }
 
 
-function XYZInput({ data, setData }) {
+export function XYZInput({ data, setData }) {
 	return <>
 		<NumberWrapper>
 			<label>X: <NumberInput value={data.x} onChange={e => {
