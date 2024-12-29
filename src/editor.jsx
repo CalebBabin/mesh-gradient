@@ -348,17 +348,20 @@ function NodeRenderer({ node }) {
 			<div className="absolute inset-0 -m-2 window -z-50">
 				<div className="window-body absolute inset-0" />
 			</div>
-			<div className="flex justify-between items-center relative z-10">
-				<button style={{
-					display: data.deletable === false ? 'none' : 'block',
-				}} onClick={() => {
-					node.delete();
-				}}>
+			<div className="flex justify-between items-center relative z-10 p-1 pointer-events-none">
+				<button
+					className="pointer-events-none"
+					style={{
+						display: data.deletable === false ? 'none' : 'block',
+					}} onClick={() => {
+						node.delete();
+					}}
+				>
 					<Delete />
 				</button>
 				<span />
 				<button
-					className="cursor-move"
+					className="cursor-move pointer-events-auto"
 					ref={handleRef}
 				>
 					<DragIndicator />
