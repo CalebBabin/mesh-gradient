@@ -35,8 +35,14 @@
 
 body {
 	font-size: 1rem;
-	background-color: black;
 	font-family: 'SometypeMono';
+	background-color: white;
+}
+
+@media (prefers-color-scheme: dark) {
+	body {
+		background-color: black;
+	}
 }
 
 html,
