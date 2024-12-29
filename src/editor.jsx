@@ -221,10 +221,10 @@ function Connector({ nodeA, nodeB }) {
 			}}
 			draggable={true}
 			style={{
-				transform: 'translate(' + (a_data.x + 10 + nodeWidth / 2) + 'px,' + (a_data.y + 10 + nodeHeight / 2) + 'px)',
+				transform: 'translate(' + (a_data.x + 10 + nodeWidth / 2 - 1) + 'px,' + (a_data.y + nodeHeight / 2) + 'px)',
 			}}
 			data-connector={true}
-			className="absolute z-20 top-1/2 left-1/2 -m-1 w-2 h-2 bg-blue-300 hover:-m-2 hover:w-4 hover:h-4 hover:bg-blue-600"
+			className="absolute z-20 top-1/2 left-1/2 -my-2 w-4 h-4 bg-blue-300 hover:w-5 hover:h-5 rounded-r-full hover:bg-blue-600"
 		/>
 	</>;
 }
