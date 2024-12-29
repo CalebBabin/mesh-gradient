@@ -151,21 +151,26 @@ export function useNodeData(node) {
 
 	useEffect(() => {
 		if (!node) return;
-		function listener() {
+		function moveListener() {
 			setData(node.getData());
 		}
-		listener();
+		moveListener();
 
-		node.on('move', listener);
-		node.on('connection', listener);
+		function connectionListener() {
+			setData(node.getData());
+			node.recompile();
+		}
+
+		node.on('move', moveListener);
+		node.on('connection', connectionListener);
 
 		const deleteListener = () => {
 			setData(false);
 		}
 		node.on('delete', deleteListener);
 		return () => {
-			node.off('move', listener);
-			node.off('connection', listener);
+			node.off('move', moveListener);
+			node.off('connection', connectionListener);
 			node.off('delete', deleteListener);
 		}
 	}, [node]);
