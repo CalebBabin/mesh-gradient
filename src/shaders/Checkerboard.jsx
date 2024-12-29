@@ -27,28 +27,30 @@ function UI({ node, shader }) {
 		</span>
 		<div className="flex items-center justify-between">
 			<div className="w-[75%]">
-				<button onClick={() => {
-					shader.data = {
-						x: Math.floor(Math.random() * maxBuffer),
-						y: Math.floor(Math.random() * maxBuffer),
-						speed: [Math.random() * 2 - 1, Math.random() * 2 - 1],
-						doubleChecker: Math.floor(Math.random() * maxBuffer),
-					};
-				}} className="relative z-10 font-thin">
-					random
-				</button>
-				<div>
-					<input
-						type="checkbox"
-						id={"lockAspect" + node.id}
-						checked={!!lockAspect}
-						onChange={e => {
-							setLockAspect(e.target.checked);
-						}}
-					/>
-					<label htmlFor={"lockAspect" + node.id}>
-						lock ratio?
-					</label>
+				<div className="flex gap-2 mb-2 items-center">
+					<button onClick={() => {
+						shader.data = {
+							x: Math.floor(Math.random() * maxBuffer),
+							y: Math.floor(Math.random() * maxBuffer),
+							speed: [Math.random() * 2 - 1, Math.random() * 2 - 1],
+							doubleChecker: Math.floor(Math.random() * maxBuffer),
+						};
+					}} className="relative z-10 font-thin">
+						random
+					</button>
+					<div>
+						<input
+							type="checkbox"
+							id={"lockAspect" + node.id}
+							checked={!!lockAspect}
+							onChange={e => {
+								setLockAspect(e.target.checked);
+							}}
+						/>
+						<label htmlFor={"lockAspect" + node.id}>
+							lock ratio?
+						</label>
+					</div>
 				</div>
 				<div className="field-row w-full">
 					<label>x:</label>
