@@ -65,6 +65,18 @@ export class BaseShader extends EventEmitter {
 	}
 }
 
+const blendModes = {
+	'add': /*glsl*/`
+		gl_FragColor += color;
+	`,
+	'subtract': /*glsl*/`
+		gl_FragColor -= color;
+	`,
+	'multiply': /*glsl*/`
+		gl_FragColor *= color;
+	`,
+}
+
 /**
  * 
  * @param {Node} node 
@@ -87,6 +99,7 @@ export function compileShaders(startNode) {
 	let compiledFrag = /* glsl */`
 		${sharedStart}
 		void main() {
+			vec4 color = vec4(1.0);
 			gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 	`;
 	let compiledVert = /* glsl */`
@@ -134,8 +147,13 @@ export function compileShaders(startNode) {
 		if (!node.shader) continue;
 		try {
 			const { fragment, vertex } = node.shader.compile();
+			console.log(fragment);
 
-			if (fragment) compiledFrag += '\n{\n' + fragment + '\n}\n';
+			if (fragment) compiledFrag += `{
+				color = vec4(1.0);
+				${fragment}
+				${blendModes[node.shader.data.blendMode ?? 'add']}
+			}`;
 			if (vertex) compiledVert += '\n{\n' + vertex + '\n}\n';
 		} catch (e) {
 			console.error(e);

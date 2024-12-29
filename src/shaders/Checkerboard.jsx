@@ -134,6 +134,7 @@ export class CheckerboardShader extends BaseShader {
 		y: 50,
 		doubleChecker: 5,
 		speed: [-0.5, 0.5, 1],
+		blendMode: 'multiply',
 	};
 
 	constructor(data = {}) {
@@ -154,26 +155,14 @@ export class CheckerboardShader extends BaseShader {
 
 		float x = (vUv.x + slowTime * speed.x) * ${trailZero(detailX)};
 		float y = (vUv.y + slowTime * speed.y) * ${trailZero(detailY)};
-		if (
-		mod(
-		floor(x) + floor(y),
-		2.0
-		) == 0.0
-		) {
-					if (
-		mod(
-		floor(
-		x * ${trailZero(data.doubleChecker)}
-		)
-		+
-		floor(
-		y * ${trailZero(data.doubleChecker)}
-		),
-		2.0
-		) == 0.0) {
-			gl_FragColor *= vec4(0.5, 0.5, 0.5, 1.0);
-					}
-				}
-			`}
+		if (mod(floor(x) + floor(y), 2.0) == 0.0) {
+			if (mod(
+				floor(x * ${trailZero(data.doubleChecker)}) +
+				floor(y * ${trailZero(data.doubleChecker)}),
+				2.0
+			) == 0.0) {
+				color *= vec4(0.5, 0.5, 0.5, 1.0);
+			}
+		}`}
 	}
 }

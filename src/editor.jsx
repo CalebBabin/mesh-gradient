@@ -5,6 +5,7 @@ import { StartShader, StopShader } from "./shaders/StartStopUtils";
 import { compileShaders } from "./shaders/BASE";
 import { CheckerboardShader } from "./shaders/Checkerboard";
 import { BubbleShader } from "./shaders/bubbles";
+import { SimpleGradientShader } from "./shaders/simplegradient";
 
 const nodeWidth = 300;
 const nodeHeight = 200;
@@ -355,7 +356,7 @@ function NodeRenderer({ node }) {
 			</div>
 			<div className="flex justify-between items-center relative z-10 p-1 pointer-events-none">
 				<button
-					className="pointer-events-none"
+					className="pointer-events-auto cursor-pointer"
 					style={{
 						display: data.deletable === false ? 'none' : 'block',
 					}} onClick={() => {
@@ -491,10 +492,15 @@ function Editor({ onChange }) {
 			bubbleNode2.connect(bubbleNode, bubbleNode2);
 			new_nodes.push(bubbleNode2);
 
-			const endNode = new Node({ deletable: false, shader: new StopShader(), x: startX + (nodeCount++) * tempNodeWidth }, context);
-			endNode.connect(bubbleNode2, endNode);
 
-			new_nodes.push(endNode);
+			const gradientNode = new Node({
+				x: startX + (nodeCount++) * tempNodeWidth,
+				shader: new SimpleGradientShader({
+				}),
+			}, context);
+			gradientNode.connect(bubbleNode2, gradientNode);
+			new_nodes.push(gradientNode);
+
 
 			addNode(...new_nodes);
 		}, 1000);
