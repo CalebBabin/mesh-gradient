@@ -485,7 +485,7 @@ function Editor({ onChange }) {
 			const bubbleNode2 = new Node({
 				x: startX + (nodeCount++) * tempNodeWidth,
 				shader: new BubbleShader({
-					size: 0.7,
+					size: 0.5,
 					height: 0.5,
 				}),
 			}, context);
