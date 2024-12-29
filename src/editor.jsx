@@ -189,14 +189,14 @@ function Line({ startX, startY, endX, endY }) {
 
 		<path
 			d={`M ${SVGCanvasSizeHalf + (startX)} ${SVGCanvasSizeHalf + (startY)} C ${SVGCanvasSizeHalf + startX + Math.abs(xDist)} ${SVGCanvasSizeHalf + (startY)} ${SVGCanvasSizeHalf + endX - Math.abs(xDist)} ${SVGCanvasSizeHalf + (endY)} ${SVGCanvasSizeHalf + (endX)} ${SVGCanvasSizeHalf + (endY)}`}
-			stroke="#000000"
-			strokeWidth="2"
+			stroke="#222222"
+			strokeWidth="5"
 			fill="none"
 		/>
 		<path
 			d={`M ${SVGCanvasSizeHalf + (startX)} ${SVGCanvasSizeHalf + (startY)} C ${SVGCanvasSizeHalf + startX + Math.abs(xDist)} ${SVGCanvasSizeHalf + (startY)} ${SVGCanvasSizeHalf + endX - Math.abs(xDist)} ${SVGCanvasSizeHalf + (endY)} ${SVGCanvasSizeHalf + (endX)} ${SVGCanvasSizeHalf + (endY)}`}
 			stroke="#ffffff"
-			strokeWidth="4"
+			strokeWidth="2"
 			strokeDasharray={10}
 			fill="none"
 		/>
