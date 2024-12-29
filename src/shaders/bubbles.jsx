@@ -87,8 +87,8 @@ export class BubbleShader extends BaseShader {
 		this.data = {
 			...this.defaults,
 			speed: [
-				Math.random() * 2 - 1,
-				Math.random() * 2 - 1,
+				(Math.random() * 2 - 1) * 0.25,
+				(Math.random() * 2 - 1) * 0.25,
 			],
 			...data,
 		};

@@ -466,7 +466,6 @@ function Editor({ onChange }) {
 			const bubbleNode = new Node({
 				x: startX + (nodeCount++) * tempNodeWidth,
 				shader: new BubbleShader({
-					speed: { x: 0.25, y: 0.25 },
 					size: 0.3,
 					height: 0.5,
 				}),
@@ -477,7 +476,6 @@ function Editor({ onChange }) {
 			const bubbleNode2 = new Node({
 				x: startX + (nodeCount++) * tempNodeWidth,
 				shader: new BubbleShader({
-					speed: { x: 0.5, y: 0.5 },
 					size: 0.7,
 					height: 0.5,
 				}),
