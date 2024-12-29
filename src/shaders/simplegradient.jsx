@@ -55,7 +55,7 @@ export class SimpleGradientShader extends BaseShader {
 	compile() {
 		return {
 			fragment: /*glsl*/`
-				color = vec4(vUv.x, vUv.y, 1.0, 1.0);
+				color = vec4(1.0 - vUv.x, 1.0 - vUv.y, 1.0 - vUv.y, 1.0);
 			`
 		}
 	}

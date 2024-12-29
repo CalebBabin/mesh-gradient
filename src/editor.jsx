@@ -41,9 +41,10 @@ export class Node extends EventEmitter {
 	constructor(props, context) {
 		super();
 		this.context = context;
+		console.log('new node', this.id, this);
+		console.log('context', context);
 		context.nodeMap.set(this.id, this);
 		const config = Object.assign({ ...Node.defaultProps }, props);
-
 
 		this.x = config.x;
 		this.y = config.y;
@@ -227,7 +228,7 @@ function Connector({ nodeA, nodeB }) {
 			}}
 			draggable={true}
 			style={{
-				transform: 'translate(' + (a_data.x + 10 + nodeWidth / 2 - 1) + 'px,' + (a_data.y + nodeHeight / 2) + 'px)',
+				transform: 'translate(' + (a_data.x + 10 + nodeWidth / 2 - 4) + 'px,' + (a_data.y + nodeHeight / 2) + 'px)',
 			}}
 			data-connector={true}
 			className="absolute z-20 top-1/2 left-1/2 -my-2 w-4 h-4 bg-blue-300 hover:w-5 hover:h-5 rounded-r-full hover:bg-blue-600"
@@ -532,5 +533,47 @@ function Editor({ onChange }) {
 
 	return <div className={"absolute top-1/2 left-1/2"}>
 		{renderedNodes}
+		<AddNodePopup addNode={addNode} />
 	</div>
 };
+
+const availableShaders = [
+	CheckerboardShader,
+	BubbleShader,
+	SimpleGradientShader,
+];
+function AddNodePopup({ addNode }) {
+	const context = useContext(NodeContext);
+	const [active, setActive] = useState(false);
+	return <>
+		<button onClick={() => {
+			setActive(!active);
+		}} className="absolute top-[calc(-50vh+0.5rem)] left-[calc(-50vw+0.5rem)] z-[99]">
+			{active ? 'close' : '+add'}
+		</button>
+
+		{active ? <div className="absolute top-[-50vh] left-[-50vw] p-4 gap-2 pt-16 w-32 max-w-[90vw] h-screen flex flex-col items-center bg-black/50 backdrop-blur-sm z-[98] overflow-auto">
+
+			{availableShaders.map((Shader, i) => {
+				return <button
+					key={i}
+					onClick={() => {
+						console.log('adding', Shader.type);
+						if (!context) {
+							alert('no context!');
+							return;
+						}
+						addNode(new Node({
+							x: (Math.random() * 100 - 50) + 100,
+							y: (Math.random() * 100 - 50),
+							shader: new Shader({}, context),
+						}, context));
+						setActive(false);
+					}}
+				>
+					{Shader.type}
+				</button>
+			})}
+		</div> : null}
+	</>
+}
