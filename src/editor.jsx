@@ -7,7 +7,7 @@ import { CheckerboardShader } from "./shaders/Checkerboard";
 import { BubbleShader } from "./shaders/bubbles";
 
 const nodeWidth = 300;
-const nodeHeight = 300;
+const nodeHeight = 200;
 
 const SVGCanvasSize = 5000;
 const SVGCanvasSizeHalf = SVGCanvasSize / 2;
@@ -221,7 +221,7 @@ function Connector({ nodeA, nodeB }) {
 			}}
 			draggable={true}
 			style={{
-				transform: 'translate(' + (a_data.x + nodeWidth / 2) + 'px,' + (a_data.y + nodeHeight / 2) + 'px)',
+				transform: 'translate(' + (a_data.x + 10 + nodeWidth / 2) + 'px,' + (a_data.y + 10 + nodeHeight / 2) + 'px)',
 			}}
 			data-connector={true}
 			className="absolute z-20 top-1/2 left-1/2 -m-1 w-2 h-2 bg-blue-300 hover:-m-2 hover:w-4 hover:h-4 hover:bg-blue-600"
@@ -335,7 +335,7 @@ function NodeRenderer({ node }) {
 			onDragExit={e => {
 				setOutlined(false);
 			}}
-			className={"window window-body absolute z-10 box-border bg-black rounded-lg overflow-hidden outline outline-[silver] outline-4 text-white p-2"}
+			className={"absolute z-10 text-white p-2 box-border"}
 			style={{
 				transform: 'translate(' + data.x + 'px, ' + data.y + 'px)',
 				outline: outlined ? '2px dashed blue' : '',
@@ -345,6 +345,7 @@ function NodeRenderer({ node }) {
 				marginHeight: -nodeHeight / 2 + 'px',
 			}}
 		>
+			<div className="absolute inset-0 -m-2 window window-body -z-50" />
 			<div className="flex justify-between items-center relative z-10">
 				<button style={{
 					display: data.deletable === false ? 'none' : 'block',

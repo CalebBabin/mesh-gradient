@@ -33,7 +33,7 @@ function UI({ node, shader }) {
 	}, [tilesX, tilesY, bufferDouble, speed]);
 
 
-	return <div className="absolute border-[silver+1rem+solid] inset-0 bg-red flex flex-col justify-center items-center text-center">
+	return <div className="absolute inset-0 bg-red flex flex-col justify-center items-center text-center">
 		<div style={{
 			backgroundImage: 'url(/checkerboard.svg)',
 			backgroundSize: ((node.id + 2) % 3 === 0 ? '512px' : '1024px'),

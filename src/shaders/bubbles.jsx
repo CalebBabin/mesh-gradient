@@ -33,7 +33,7 @@ function UI({ node, shader }) {
     }, [size, height, speed]);
 
 
-    return <div className="absolute border-[silver+1rem+solid] inset-0 bg-red flex flex-col justify-center items-center text-center">
+    return <div className="absolute inset-0 bg-red flex flex-col justify-center items-center text-center">
         <div className="absolute inset-0 pointer-events-none -z-10  bg-black opacity-60" />
         <span className="relative z-10 font-thin text-3xl text-cyan-100">
             bubbles
