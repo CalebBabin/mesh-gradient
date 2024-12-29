@@ -14,10 +14,10 @@ function UI({ node, shader }) {
 };
 
 export const useShaderData = (shader) => {
-	const [data, setData] = useState({...shader.data});
+	const [data, setData] = useState({ ...shader.data });
 	useEffect(() => {
 		const listener = () => {
-			setData({...shader.data});
+			setData({ ...shader.data });
 		};
 		listener();
 		shader.on('update', listener);
@@ -37,13 +37,19 @@ export class BaseShader extends EventEmitter {
 	connectOut = true;
 	UI = UI
 
+	recompileTimeout = null;
+
 	get data() {
 		return this._data;
 	}
 	set data(newData = {}) {
 		Object.assign(this._data, newData);
 		this.broadcast('update', this._data);
-		this.recompile();
+
+		if (this.recompileTimeout) {
+			clearTimeout(this.recompileTimeout)
+		}
+		this.recompileTimeout = setTimeout(this.recompile.bind(this), 100);
 	}
 
 	constructor(data) {

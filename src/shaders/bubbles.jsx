@@ -15,100 +15,94 @@ const maxHeight = 5000;
  * 
  * @param {Node} node
  * @param {CheckerboardShader} shader 
- * @returns 
+ * @returns {JSX.Element} UI
  */
 function UI({ node, shader }) {
-    const [size, setSize] = useState(shader.data.size ?? 0.5);
-    const [height, setHeight] = useState(shader.data.height ?? 0.5);
-    const [speed, setSpeed] = useState(shader.data.speed ? [shader.data.speed.x, shader.data.speed.y] : [-0.5, 0.5]);
+	const sData = useShaderData(shader);
 
-    useEffect(() => {
-        shader.data = {
-            size: size,
-            height: height,
-            speed: { x: speed[0], y: speed[1] },
-        };
-        node.recompile();
-        console.log(shader.data);
-    }, [size, height, speed]);
+	return <div className="absolute inset-0 p-2 bg-red flex flex-col justify-center items-center text-center">
+		<div className="absolute inset-0 pointer-events-none -z-10  bg-black opacity-60" />
+		<span className="relative z-10 font-thin text-3xl text-cyan-100">
+			bubbles
+		</span>
+		<div className="field-row w-full">
+			<label>size:</label>
+			<label>1</label>
+			<input
+				className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+				type="range"
+				min="1"
+				max={maxSize}
+				value={((1 - sData.size) * maxSize)}
+				onChange={e => {
+					shader.data = {
+						size: (maxSize - Number(e.target.value)) / maxSize,
+					}
+				}}
+			/>
+			<label>{Number(maxSize).toLocaleString('en-US')}</label>
+		</div>
+		<div className="field-row w-full">
+			<label>height:</label>
+			<label>0</label>
+			<input
+				className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+				type="range"
+				min={0}
+				step={1}
+				max={maxHeight}
+				value={sData.height * maxHeight || 0}
+				onChange={e => {
+					shader.data = {
+						height: e.target.value / maxHeight
+					};
+				}}
+			/>
+			<label>{maxHeight}</label>
+		</div>
 
-
-    return <div className="absolute inset-0 bg-red flex flex-col justify-center items-center text-center">
-        <div className="absolute inset-0 pointer-events-none -z-10  bg-black opacity-60" />
-        <span className="relative z-10 font-thin text-3xl text-cyan-100">
-            bubbles
-        </span>
-        <div className="field-row w-full">
-            <label>size:</label>
-            <label>1</label>
-            <input
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-                type="range"
-                min="1"
-                max={maxSize}
-                value={((1 - size) * maxSize)}
-                onChange={e => {
-                    setSize((maxSize - Number(e.target.value)) / maxSize);
-                }}
-            />
-            <label>{Number(maxSize).toLocaleString('en-US')}</label>
-        </div>
-        <div className="field-row w-full">
-            <label>height:</label>
-            <label>0</label>
-            <input
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-                type="range"
-                min={0}
-                step={1}
-                max={maxHeight}
-                value={height * maxHeight || 0}
-                onChange={e => {
-                    setHeight(e.target.value / maxHeight);
-                }}
-            />
-            <label>{maxHeight}</label>
-        </div>
-
-        <XYInput data={speed} onChange={setSpeed} />
-    </div>;
+		<XYInput data={sData.speed} onChange={v => {
+			shader.data = {
+				speed: v,
+			};
+		}} />
+	</div>;
 };
 
 const type = "Bubble";
 export class BubbleShader extends BaseShader {
-    static type = type;
-    type = type;
-    UI = UI;
+	static type = type;
+	type = type;
+	UI = UI;
 
-    defaults = {
-        size: 0.5,
-        height: 0.5,
-        speed: { x: 1, y: 1, z: 1 },
-    };
+	defaults = {
+		size: 0.5,
+		height: 0.5,
+		speed: [0, 0, 0],
+	};
 
-    constructor(data = {}) {
-        super(data);
+	constructor(data = {}) {
+		super(data);
 
-        this.data = {
-            ...this.defaults,
-            speed: {
-                x: Math.random() * 2 - 1,
-                y: Math.random() * 2 - 1,
-                z: Math.random() * 2 - 1,
-            },
-            ...data,
-        };
-    }
+		this.data = {
+			...this.defaults,
+			speed: [
+				Math.random() * 2 - 1,
+				Math.random() * 2 - 1,
+			],
+			...data,
+		};
+	}
 
-    compile() {
-        const { size, height, speed } = this.data;
+	compile() {
+		const { size, height, speed } = this.data;
 
-        if (!size || !height || !speed) {
-            return {};
-        }
-        return {
-            vertex: /*glsl*/`
-            vec3 speed = vec3(${trailZero(speed.x)}, ${trailZero(speed.y)}, 0.0);
+		if (!size || !height || !speed) {
+			return {};
+		}
+		return {
+			vertex: /*glsl*/`
+            vec3 speed = vec3(${trailZero(speed[0])}, ${trailZero(speed[1])}, 0.0);
             float slowTime = uTime * 0.001;
 
 
@@ -131,5 +125,5 @@ export class BubbleShader extends BaseShader {
 
             offset.y += -sin(distToCenterOfTile * 3.14159 * 0.5) * ${trailZero(height)} * tileSize * 10.0;
             `}
-    }
+	}
 }

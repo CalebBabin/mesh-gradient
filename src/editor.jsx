@@ -335,7 +335,7 @@ function NodeRenderer({ node }) {
 			onDragExit={e => {
 				setOutlined(false);
 			}}
-			className={"absolute z-10 text-white p-2 box-border"}
+			className={"absolute z-10 text-white box-border"}
 			style={{
 				transform: 'translate(' + data.x + 'px, ' + data.y + 'px)',
 				outline: outlined ? '2px dashed blue' : '',
@@ -345,7 +345,9 @@ function NodeRenderer({ node }) {
 				marginHeight: -nodeHeight / 2 + 'px',
 			}}
 		>
-			<div className="absolute inset-0 -m-2 window window-body -z-50" />
+			<div className="absolute inset-0 -m-2 window -z-50">
+				<div className="window-body absolute inset-0" />
+			</div>
 			<div className="flex justify-between items-center relative z-10">
 				<button style={{
 					display: data.deletable === false ? 'none' : 'block',
