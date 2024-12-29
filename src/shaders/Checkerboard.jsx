@@ -16,16 +16,16 @@ function UI({ node, shader }) {
 
 	const maxBuffer = 100;
 
-	const [bufferX, setBufferX] = useState(shaderData?.detail?.x || maxBuffer / 2);
-	const [bufferY, setBufferY] = useState(shaderData?.detail?.y || maxBuffer / 2);
+	const [bufferX, setBufferX] = useState(maxBuffer / 2);
+	const [bufferY, setBufferY] = useState(maxBuffer / 2);
 	const [bufferDouble, setBufferDouble] = useState(shaderData?.doubleChecker || 0);
 	const [lockAspect, setLockAspect] = useState(true);
 
 	useEffect(() => {
 		shader.data = {
 			detail: {
-				x: Math.pow(bufferX / maxBuffer, 8) * 100,
-				y: Math.pow(bufferY / maxBuffer, 8) * 100
+				x: Math.round(Math.pow(bufferX / maxBuffer, 2) * maxBuffer),
+				y: Math.round(Math.pow(bufferY / maxBuffer, 2) * maxBuffer),
 			},
 			doubleChecker: Math.round(bufferDouble),
 		};
@@ -67,13 +67,14 @@ function UI({ node, shader }) {
 				max={maxBuffer}
 				value={bufferX}
 				onChange={e => {
-					setBufferX(e.target.value);
+					const v = Number(e.target.value);
+					setBufferX(v);
 					if (lockAspect) {
-						setBufferY(e.target.value);
+						setBufferY(v);
 					}
 				}}
 			/>
-			<label>maxBuffer</label>
+			<label>{maxBuffer}</label>
 		</div>
 		<div className="field-row w-full">
 			<label>y:</label>
@@ -86,9 +87,10 @@ function UI({ node, shader }) {
 				max={maxBuffer}
 				value={bufferY}
 				onChange={e => {
-					setBufferY(e.target.value);
+					const v = Number(e.target.value);
+					setBufferY(v);
 					if (lockAspect) {
-						setBufferX(e.target.value);
+						setBufferX(v);
 					}
 				}}
 			/>
@@ -102,7 +104,7 @@ function UI({ node, shader }) {
 				type="range"
 				min={0}
 				step={1}
-				max={100}
+				max={maxBuffer}
 				value={bufferDouble}
 				onChange={e => {
 					setBufferDouble(e.target.value);
@@ -142,31 +144,33 @@ export class CheckerboardShader extends BaseShader {
 	compile() {
 		const data = this.data;
 
+		const detailX = data.detail.x + 1;
+		const detailY = data.detail.y + 1;
 		return {
 			fragment: /*glsl*/`
 				vec3 speed = vec3(1.0, 1.0, 1.0);
 				float slowTime = uTime * 0.00001;
 
+				float x = (vUv.x + slowTime * speed.x) * ${trailZero(detailX)};
+				float y = (vUv.y + slowTime * speed.y) * ${trailZero(detailY)};
 				if (
 					mod(
-						floor(
-							(vUv.x + slowTime * speed.x) * ${trailZero(data.detail.x)} * 10.0
-						) + floor(
-							(vUv.y + slowTime * speed.y) * ${trailZero(data.detail.y)} * 10.0
-						),
+						floor(x) + floor(y),
 						2.0
 					) == 0.0
 				) {
 					if (
 						mod(
 							floor(
-								(vUv.x + slowTime * speed.x) * ${trailZero(data.detail.x)} * ${trailZero(data.doubleChecker)} * 10.0
-							) + floor(
-								(vUv.y + slowTime * speed.y) * ${trailZero(data.detail.y)} * ${trailZero(data.doubleChecker)} * 10.0
+								x * ${trailZero(data.doubleChecker)}
+							)
+							+
+							floor(
+								y * ${trailZero(data.doubleChecker)}
 							),
 							2.0
 						) == 0.0) {
-						gl_FragColor *= vec4(0.5);
+						gl_FragColor *= vec4(0.5, 0.5, 0.5, 1.0);
 					}
 				}
 			`}

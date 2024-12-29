@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { trailZero } from "../utils";
 import { BaseShader, useShaderData } from "./BASE";
-import { XYZInput } from "../app.jsx";
+import { XYZInput } from "../utils/xyzInput.jsx";
+
+
 /** @typedef {import('../editor.jsx').Node} Node */
 
 
@@ -45,9 +47,9 @@ function UI({ node, shader }) {
                 type="range"
                 min="1"
                 max={maxSize}
-                value={size * maxSize}
+                value={((1 - size) * maxSize)}
                 onChange={e => {
-                    setSize(Number(e.target.value) / maxSize);
+                    setSize((maxSize - Number(e.target.value)) / maxSize);
                 }}
             />
             <label>{Number(maxSize).toLocaleString('en-US')}</label>
@@ -69,8 +71,8 @@ function UI({ node, shader }) {
             <label>{maxHeight}</label>
         </div>
 
-        <XYZInput data={speed} setData={newData => {
-            setSpeed(newData);
+        <XYZInput data={speed} onChange={newData => {
+            setSpeed({ x: newData[0], y: newData[1], z: newData[2] });
         }} />
     </div>;
 };
@@ -110,29 +112,28 @@ export class BubbleShader extends BaseShader {
 
         return {
             vertex: /*glsl*/`
-				vec3 speed = vec3(${trailZero(speed.x)}, ${trailZero(speed.y)}, ${trailZero(speed.z)});
-				float slowTime = uTime * 0.001;
+            vec3 speed = vec3(${trailZero(speed.x)}, ${trailZero(speed.y)}, ${trailZero(speed.z)});
+            float slowTime = uTime * 0.001;
 
 
-                float tileCount = ${trailZero(Math.pow(size, 4.0) * maxSize)};
-                float tileSize = 1.0 / tileCount;
+            float tileCount = ${trailZero(Math.pow(size, 4.0) * maxSize)};
+            float tileSize = 1.0 / tileCount;
 
-                float initialX = vUv.x * tileCount + slowTime * speed.x;
-                float initialY = vUv.y * tileCount + slowTime * speed.y;
+            float initialX = vUv.x * tileCount + slowTime * speed.x;
+            float initialY = vUv.y * tileCount + slowTime * speed.y;
 
-                float localX = (initialX - floor(initialX));
-                float localY = (initialY - floor(initialY));
+            float localX = (initialX - floor(initialX));
+            float localY = (initialY - floor(initialY));
 
-                float distToCenterOfTile = 1.0 - max(0.0, min(0.5, distance(
-                    vec2(
-                        localX,
-                        localY
-                    ),
-                    vec2(0.5, 0.5)
-                ))) * 2.0;
+            float distToCenterOfTile = 1.0 - min(0.5, distance(
+                vec2(
+                    localX,
+                    localY
+                ),
+                vec2(0.5, 0.5)
+            )) * 2.0;
 
-                offset.y += -sin(distToCenterOfTile * 3.14 * 0.5) * ${trailZero(height)} * tileSize * 20.0;
-				
-			`}
+            offset.y += -sin(distToCenterOfTile * 3.14159 * 0.5) * ${trailZero(height)} * tileSize * 10.0;
+            `}
     }
 }

@@ -49,31 +49,6 @@ function NumberWrapper({ children }) {
 }
 
 
-export function XYZInput({ data, setData }) {
-	return <>
-		<NumberWrapper>
-			<label>X: <NumberInput value={data.x} onChange={e => {
-				const new_data = { ...data };
-				new_data.x = e.target.value;
-				setData(new_data);
-			}} /></label>
-		</NumberWrapper>
-		<NumberWrapper>
-			<label>Y: <NumberInput value={data.y} onChange={e => {
-				const new_data = { ...data };
-				new_data.y = e.target.value;
-				setData(new_data);
-			}} /></label>
-		</NumberWrapper>
-		<NumberWrapper>
-			<label>Z: <NumberInput value={data.z} onChange={e => {
-				const new_data = { ...data };
-				new_data.z = e.target.value;
-				setData(new_data);
-			}} /></label>
-		</NumberWrapper>
-	</>
-}
 
 function MaterialTicker({ shader }) {
 	useFrame(() => {
