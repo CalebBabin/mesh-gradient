@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { trailZero } from "../utils";
 import { BaseShader, useShaderData } from "./BASE";
-import { XYZInput } from "../utils/xyzInput.jsx";
+import { XYInput } from "../utils/xyzInput.jsx";
 
 
 /** @typedef {import('../editor.jsx').Node} Node */
@@ -18,19 +18,18 @@ const maxHeight = 5000;
  * @returns 
  */
 function UI({ node, shader }) {
-    const shaderData = useShaderData(shader);
-
-    const [size, setSize] = useState(shaderData?.size * maxSize || maxSize / 2);
-    const [height, setHeight] = useState(shaderData.height || 0.5);
-    const [speed, setSpeed] = useState({ x: shaderData?.speed?.x || 0, y: shaderData?.speed?.y || 0, z: shaderData?.speed?.z || 0 });
+    const [size, setSize] = useState(shader.data.size ?? 0.5);
+    const [height, setHeight] = useState(shader.data.height ?? 0.5);
+    const [speed, setSpeed] = useState(shader.data.speed ? [shader.data.speed.x, shader.data.speed.y] : [-0.5, 0.5]);
 
     useEffect(() => {
         shader.data = {
             size: size,
             height: height,
-            speed: speed,
+            speed: { x: speed[0], y: speed[1] },
         };
         node.recompile();
+        console.log(shader.data);
     }, [size, height, speed]);
 
 
@@ -71,9 +70,7 @@ function UI({ node, shader }) {
             <label>{maxHeight}</label>
         </div>
 
-        <XYZInput data={speed} onChange={newData => {
-            setSpeed({ x: newData[0], y: newData[1], z: newData[2] });
-        }} />
+        <XYInput data={speed} onChange={setSpeed} />
     </div>;
 };
 
@@ -84,8 +81,8 @@ export class BubbleShader extends BaseShader {
     UI = UI;
 
     defaults = {
-        size: 1,
-        height: 1,
+        size: 0.5,
+        height: 0.5,
         speed: { x: 1, y: 1, z: 1 },
     };
 
@@ -109,10 +106,9 @@ export class BubbleShader extends BaseShader {
         if (!size || !height || !speed) {
             return {};
         }
-
         return {
             vertex: /*glsl*/`
-            vec3 speed = vec3(${trailZero(speed.x)}, ${trailZero(speed.y)}, ${trailZero(speed.z)});
+            vec3 speed = vec3(${trailZero(speed.x)}, ${trailZero(speed.y)}, 0.0);
             float slowTime = uTime * 0.001;
 
 

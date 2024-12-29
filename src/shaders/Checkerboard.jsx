@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { useNodeData } from "../editor";
 import { trailZero } from "../utils";
 import { BaseShader, useShaderData } from "./BASE";
+import { XYInput } from "../utils/xyzInput.jsx";
 /** @typedef {import('../editor.jsx').Node} Node */
 
 
@@ -16,21 +16,21 @@ function UI({ node, shader }) {
 
 	const maxBuffer = 100;
 
-	const [bufferX, setBufferX] = useState(maxBuffer / 2);
-	const [bufferY, setBufferY] = useState(maxBuffer / 2);
-	const [bufferDouble, setBufferDouble] = useState(shaderData?.doubleChecker || 0);
+	const [tilesX, setTilesX] = useState(shader.data.x);
+	const [tilesY, setTilesY] = useState(shader.data.y);
+	const [bufferDouble, setBufferDouble] = useState(shader.data.doubleChecker);
 	const [lockAspect, setLockAspect] = useState(true);
+	const [speed, setSpeed] = useState(shader.data?.speed ? [shader.data.speed.x, shader.data.speed.y] : [-0.5, 0.5]);
 
 	useEffect(() => {
 		shader.data = {
-			detail: {
-				x: Math.round(Math.pow(bufferX / maxBuffer, 2) * maxBuffer),
-				y: Math.round(Math.pow(bufferY / maxBuffer, 2) * maxBuffer),
-			},
+			x: Math.round(Math.pow(tilesX / maxBuffer, 2) * maxBuffer),
+			y: Math.round(Math.pow(tilesY / maxBuffer, 2) * maxBuffer),
+			speed: { x: speed[0], y: speed[1] },
 			doubleChecker: Math.round(bufferDouble),
 		};
 		node.recompile();
-	}, [bufferX, bufferY, bufferDouble]);
+	}, [tilesX, tilesY, bufferDouble, speed]);
 
 
 	return <div className="absolute border-[silver+1rem+solid] inset-0 bg-red flex flex-col justify-center items-center text-center">
@@ -43,8 +43,10 @@ function UI({ node, shader }) {
 			checkerboard
 		</span>
 		<button onClick={() => {
-			shader.randomize();
-			node.recompile();
+			setTilesX(Math.floor(Math.random() * maxBuffer));
+			setTilesY(Math.floor(Math.random() * maxBuffer));
+			setSpeed([Math.random() * 2 - 1, Math.random() * 2 - 1])
+			setBufferDouble(Math.floor(Math.random() * maxBuffer));
 		}} className="relative z-10 font-thin">
 			random
 		</button>
@@ -65,12 +67,12 @@ function UI({ node, shader }) {
 				type="range"
 				min="0"
 				max={maxBuffer}
-				value={bufferX}
+				value={tilesX}
 				onChange={e => {
 					const v = Number(e.target.value);
-					setBufferX(v);
+					setTilesX(v);
 					if (lockAspect) {
-						setBufferY(v);
+						setTilesY(v);
 					}
 				}}
 			/>
@@ -85,12 +87,12 @@ function UI({ node, shader }) {
 				min={0}
 				step={1}
 				max={maxBuffer}
-				value={bufferY}
+				value={tilesY}
 				onChange={e => {
 					const v = Number(e.target.value);
-					setBufferY(v);
+					setTilesY(v);
 					if (lockAspect) {
-						setBufferX(v);
+						setTilesX(v);
 					}
 				}}
 			/>
@@ -112,6 +114,8 @@ function UI({ node, shader }) {
 			/>
 			<label>20</label>
 		</div>
+
+		<XYInput data={speed} onChange={setSpeed} />
 	</div>;
 };
 
@@ -122,33 +126,26 @@ export class CheckerboardShader extends BaseShader {
 	UI = UI;
 
 	defaults = {
-		detail: { x: 1, y: 1 },
+		x: 50,
+		y: 50,
+		doubleChecker: 1,
+		speed: { x: -0.5, y: 0.5, z: 1 },
 	};
 
 	constructor(data = {}) {
 		super(data);
-
 		this.data = Object.assign({ ...this.defaults }, this.data);
 	}
 
-	randomize() {
-		this.data = {
-			detail: {
-				x: Math.floor(Math.random() * 5) + 0.1,
-				y: Math.floor(Math.random() * 5) + 0.1,
-			},
-		};
-		this.recompile();
-	}
 
 	compile() {
 		const data = this.data;
 
-		const detailX = data.detail.x + 1;
-		const detailY = data.detail.y + 1;
+		const detailX = data.x + 1;
+		const detailY = data.y + 1;
 		return {
 			fragment: /*glsl*/`
-				vec3 speed = vec3(1.0, 1.0, 1.0);
+				vec3 speed = vec3(${trailZero(data.speed.x)}, ${trailZero(data.speed.y)}, ${trailZero(data.speed.z)});
 				float slowTime = uTime * 0.00001;
 
 				float x = (vUv.x + slowTime * speed.x) * ${trailZero(detailX)};

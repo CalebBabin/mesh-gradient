@@ -7,7 +7,7 @@ import { CheckerboardShader } from "./shaders/Checkerboard";
 import { BubbleShader } from "./shaders/bubbles";
 
 const nodeWidth = 300;
-const nodeHeight = 200;
+const nodeHeight = 300;
 
 const SVGCanvasSize = 5000;
 const SVGCanvasSizeHalf = SVGCanvasSize / 2;
@@ -335,7 +335,7 @@ function NodeRenderer({ node }) {
 			onDragExit={e => {
 				setOutlined(false);
 			}}
-			className={"absolute z-10 box-border bg-black rounded-lg overflow-hidden outline outline-[silver] outline-4 text-white p-2"}
+			className={"window window-body absolute z-10 box-border bg-black rounded-lg overflow-hidden outline outline-[silver] outline-4 text-white p-2"}
 			style={{
 				transform: 'translate(' + data.x + 'px, ' + data.y + 'px)',
 				outline: outlined ? '2px dashed blue' : '',
@@ -353,7 +353,7 @@ function NodeRenderer({ node }) {
 				}}>
 					<Delete />
 				</button>
-				<span className="text-white/50 font-black">{node.id}</span>
+				<span />
 				<button
 					className="cursor-move"
 					ref={handleRef}
@@ -462,15 +462,22 @@ function Editor({ onChange }) {
 
 			const bubbleNode = new Node({
 				x: startX + (nodeCount++) * tempNodeWidth,
-				shader: new BubbleShader(),
+				shader: new BubbleShader({
+					speed: { x: 0.25, y: 0.25 },
+					size: 0.3,
+					height: 0.5,
+				}),
 			}, context);
 			bubbleNode.connect(checkerNode, bubbleNode);
 			new_nodes.push(bubbleNode);
 
-			
 			const bubbleNode2 = new Node({
 				x: startX + (nodeCount++) * tempNodeWidth,
-				shader: new BubbleShader(),
+				shader: new BubbleShader({
+					speed: { x: 0.5, y: 0.5 },
+					size: 0.7,
+					height: 0.5,
+				}),
 			}, context);
 			bubbleNode2.connect(bubbleNode, bubbleNode2);
 			new_nodes.push(bubbleNode2);

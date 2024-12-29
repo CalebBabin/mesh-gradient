@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export function XYZInput({ data = [0, 0, 0], onChange }) {
+export function XYInput({ data = [0, 0], onChange }) {
     const canvasRef = useRef();
-    const [pos, setPos] = useState([0, 0, 0]);
+    const [pos, setPos] = useState([0, 0]);
 
     useEffect(() => {
         if (!Array.isArray(data)) {
-            setPos([data.x, data.y, data.z]);
+            setPos([data.x, data.y]);
         } else {
             setPos(data);
         }
@@ -18,7 +18,7 @@ export function XYZInput({ data = [0, 0, 0], onChange }) {
         const rect = canvas.getBoundingClientRect();
         const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
         const y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
-        onChange([x, y, pos[2]]);
+        onChange([x, y]);
     }, [canvasRef]);
 
     return <div className='flex'>
@@ -27,6 +27,8 @@ export function XYZInput({ data = [0, 0, 0], onChange }) {
             ref={canvasRef}
             onClick={onClick}
         >
+            <div className='absolute inset-0 left-1/2 right-auto w-[1px] bg-amber-400' />
+            <div className='absolute inset-0 top-1/2 bottom-auto h-[1px] bg-amber-400' />
             <div
                 className="absolute w-2 h-2 -m-1 rounded-full bg-sky-500"
                 style={{
