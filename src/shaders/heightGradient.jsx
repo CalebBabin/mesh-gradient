@@ -116,8 +116,6 @@ export class HeightGradientShader extends BaseShader {
 
 		const minHeight = (Math.min(data.minHeight, data.maxHeight) - 0.5) * 30.0;
 		const maxHeight = (Math.max(data.minHeight, data.maxHeight) - 0.5) * 30.0;
-
-		console.log(minHeight, maxHeight);
 		return {
 			fragment: /*glsl*/`
 				vec4 colorA = vec4(${trailZero(colorA.l)}, ${trailZero(colorA.c)}, ${trailZero(colorA.h)}, ${trailZero(colorA.a)});
