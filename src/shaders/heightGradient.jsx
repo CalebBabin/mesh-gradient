@@ -14,7 +14,6 @@ import { BaseShader, StrengthSlider, useShaderData } from "./BASE.jsx";
  */
 function UI({ node, shader }) {
 	const sData = useShaderData(shader);
-
 	const sliderResolution = 1000;
 
 	return <div className="absolute inset-0 p-2 bg-red flex flex-col justify-center items-center text-center">
@@ -49,32 +48,60 @@ function UI({ node, shader }) {
 				</div>
 
 				<div>
-					<input
-						className="has-box-indicator"
-						type="range"
-						min="0"
-						max={sliderResolution}
-						step="1"
-						value={Math.min(sData.minHeight, sData.maxHeight) * sliderResolution}
-						onChange={e => {
-							shader.data = {
-								minHeight: e.target.value / sliderResolution,
-							}
-						}}
-					/>
-					<input
-						className="has-box-indicator"
-						type="range"
-						min="0"
-						max={sliderResolution}
-						step="1"
-						value={Math.max(sData.minHeight, sData.maxHeight) * sliderResolution}
-						onChange={e => {
-							shader.data = {
-								maxHeight: e.target.value / sliderResolution,
-							}
-						}}
-					/>
+					<label>
+						min:
+						<input
+							className="has-box-indicator"
+							type="range"
+							min="0"
+							max={sliderResolution}
+							step="1"
+							value={sData.minHeight * sliderResolution}
+							onChange={e => {
+								const value = Number(e.target.value) / sliderResolution;
+								shader.data = {
+									minHeight: value,
+									maxHeight: Math.max(sData.maxHeight, value),
+								}
+							}}
+						/>
+					</label>
+					<label>
+						max:
+						<input
+							className="has-box-indicator"
+							type="range"
+							min="0"
+							max={sliderResolution}
+							step="1"
+							value={sData.maxHeight * sliderResolution}
+							onChange={e => {
+								const value = Number(e.target.value) / sliderResolution;
+								shader.data = {
+									minHeight: Math.min(sData.minHeight, value),
+									maxHeight: value,
+								}
+							}}
+						/>
+					</label>
+
+					
+					<label>
+						scale:
+						<input
+							className="has-box-indicator"
+							type="range"
+							min="0.1"
+							max={10}
+							step="0.1"
+							value={sData.scale}
+							onChange={e => {
+								shader.data = {
+									scale: Number(e.target.value),
+								}
+							}}
+						/>
+					</label>
 				</div>
 			</div>
 		</div>
@@ -92,8 +119,10 @@ export class HeightGradientShader extends BaseShader {
 		colorA: { r: 74, g: 236, b: 255, a: 1 },
 		colorB: { r: 255, g: 0, b: 142, a: 1 },
 
-		minHeight: -0.1,
-		maxHeight: 1,
+		scale: 3,
+
+		minHeight: 0.45,
+		maxHeight: 0.95,
 	};
 
 	constructor(data = {}) {
@@ -101,11 +130,6 @@ export class HeightGradientShader extends BaseShader {
 
 		this.data = {
 			...this.defaults,
-			speed: [
-				(Math.random() * 2 - 1) * 0.25,
-				(Math.random() * 2 - 1) * 0.25,
-			],
-			...data,
 		};
 	}
 
@@ -114,8 +138,10 @@ export class HeightGradientShader extends BaseShader {
 		const colorA = rgbToLch(data.colorA);
 		const colorB = rgbToLch(data.colorB);
 
-		const minHeight = (Math.min(data.minHeight, data.maxHeight) - 0.5) * 30.0;
-		const maxHeight = (Math.max(data.minHeight, data.maxHeight) - 0.5) * 30.0;
+		const scale = data.scale ?? 2;
+
+		const minHeight = -(Math.min(data.minHeight, data.maxHeight) - 0.5) * scale;
+		const maxHeight = -(Math.max(data.minHeight, data.maxHeight) - 0.5) * scale;
 		return {
 			fragment: /*glsl*/`
 				vec4 colorA = vec4(${trailZero(colorA.l)}, ${trailZero(colorA.c)}, ${trailZero(colorA.h)}, ${trailZero(colorA.a)});
