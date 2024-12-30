@@ -10,12 +10,12 @@ export class EventEmitter {
 	 * @private
 	 * @default false
 	 */
-	pending = false;
+	pendingMap = new Map();
 
 	/**
 	 * @private
 	 */
-	pendingData;
+	pendingDataMap = new Map();
 
 	/**
 	 * @param {string} event
@@ -33,17 +33,16 @@ export class EventEmitter {
 			}
 			return;
 		}
-		this.pendingData = value;
-		if (this.pending)
-			return;
-		this.pending = true;
+		this.pendingDataMap.set(event, value);
+		if (this.pendingMap.get(event)) return;
+		this.pendingMap.set(event, true);
 		setTimeout(() => {
-			this.pending = false;
+			this.pendingMap.set(event, false);
 			const listeners = this.events.get(event);
 			if (!listeners)
 				return;
 			for (let i = 0; i < listeners.length; i++) {
-				listeners[i](this.pendingData);
+				listeners[i](this.pendingDataMap.get(event));
 			}
 		}, 1);
 	}

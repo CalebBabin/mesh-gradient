@@ -164,6 +164,9 @@ export class Node extends EventEmitter {
 		if (this.in) {
 			this.in.disconnect(this, false);
 		}
+		if (this.out) {
+			this.out.disconnect(this, false);
+		}
 		this.broadcast('delete', this);
 		this.deleting = true;
 	}
@@ -416,24 +419,23 @@ function NodeRenderer({ node }) {
 			<div className="absolute inset-0 -m-2 window -z-50">
 				<div className="window-body absolute inset-0" />
 			</div>
-			<div className="flex justify-between items-center relative z-10 p-1 pointer-events-none">
-				<button
-					className="pointer-events-auto cursor-pointer"
-					style={{
-						display: data.deletable === false ? 'none' : 'block',
-					}} onClick={() => {
-						node.delete();
-					}}
-				>
-					<Delete />
-				</button>
+
+			<div className="title-bar relative z-50 gap-4">
+				<div className="title-bar-text cursor-move w-full px-2 py-1" ref={handleRef}>
+					{node.shader.type}
+				</div>
 				<BlendModeSelector shader={data.shader} />
-				<button
-					className="cursor-move pointer-events-auto"
-					ref={handleRef}
-				>
-					<DragIndicator />
-				</button>
+				<div className="title-bar-controls">
+					<button aria-label="Minimize" />
+					<button aria-label="Maximize" />
+					<button aria-label="Close"
+						style={{
+							display: data.deletable === false ? 'none' : 'block',
+						}} onClick={() => {
+							node.delete();
+						}}
+					/>
+				</div>
 			</div>
 			{node?.shader?.UI ? <node.shader.UI node={node} shader={node.shader} /> : null}
 		</div>

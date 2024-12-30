@@ -167,16 +167,31 @@ export function compileShaders(startNode) {
 		if (!shader) continue;
 		try {
 			const { fragment, vertex } = shader.compile();
-			if (fragment) compiledFrag += `{
+			if (fragment) {
+				compiledFrag += `{
 				color = vec4(1.0);
-				${fragment}
-				gl_FragColor = mix(gl_FragColor, gl_FragColor ${blendModes[shader.data.blendMode ?? 'add']} color, ${trailZero((shader.data.strength ?? 255) / 255)});
-			}`;
-			if (vertex) compiledVert += `{
+				${fragment}\n`;
+
+				if (shader.data.blendMode === 'set') {
+					compiledFrag += `gl_FragColor = mix(gl_FragColor, color, ${trailZero((shader.data.strength ?? 255) / 255)});`;
+				} else {
+					compiledFrag += `gl_FragColor = mix(gl_FragColor, gl_FragColor ${blendModes[shader.data.blendMode ?? 'add']} color, ${trailZero((shader.data.strength ?? 255) / 255)});`;
+				}
+				compiledFrag += `}`;
+			}
+			if (vertex) {
+				compiledVert += `{
 				offset = vec3(0.0);
-				${vertex}
-				final_offset = mix(final_offset, final_offset ${blendModes[shader.data.blendMode ?? 'add']} offset, ${trailZero((shader.data.strength ?? 255) / 255)});
-			}`;
+				${vertex}\n`;
+
+				if (shader.data.blendMode === 'set') {
+					compiledVert += `final_offset = mix(final_offset, offset, ${trailZero((shader.data.strength ?? 255) / 255)});`;
+				} else {
+					compiledVert += `final_offset = mix(final_offset, final_offset ${blendModes[shader.data.blendMode ?? 'add']} offset, ${trailZero((shader.data.strength ?? 255) / 255)});`;
+				}
+
+				compiledVert += '\n}';
+			}
 		} catch (e) {
 			console.error(e);
 			console.error('error compiling shader');
