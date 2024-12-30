@@ -554,7 +554,9 @@ function Editor({ onChange }) {
 
 			const gradientNode = new Node({
 				x: startX + (nodeCount++) * tempNodeWidth,
-				shader: new SimpleGradientShader({
+				shader: new HeightGradientShader({
+					minHeight: 0.43,
+					maxHeight: 0.51,
 				}),
 			}, context);
 			gradientNode.connect(bubbleNode2, gradientNode);
