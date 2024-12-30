@@ -65,6 +65,7 @@ export class SimpleGradientShader extends BaseShader {
 
 	defaults = {
 		blendMode: 'multiply',
+		yAxis: true,
 		colorA: { r: 74, g: 236, b: 255, a: 1 },
 		colorB: { r: 255, g: 0, b: 142, a: 1 },
 	};

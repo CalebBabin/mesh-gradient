@@ -6,10 +6,6 @@ import { BaseShader, StrengthSlider, useShaderData } from "./BASE.jsx";
 
 /** @typedef {import('../editor.jsx').Node} Node */
 
-
-const maxSize = 500;
-const maxHeight = 5000;
-
 /**
  * 
  * @param {Node} node
