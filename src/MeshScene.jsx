@@ -49,16 +49,16 @@ export function MeshScene({
 			);
 		}
 		return new PerspectiveCamera(
-			cameraConfig.fov || 75,
-			cameraConfig.aspect || window.innerWidth / window.innerHeight,
-			cameraConfig.near || 0.1,
-			cameraConfig.far || 1000
+			cameraConfig.fov ??75,
+			cameraConfig.aspect ?? (window.innerWidth / window.innerHeight),
+			cameraConfig.near ?? 0.1,
+			cameraConfig.far ?? 1000
 		);
 	}, [cameraConfig]);
 
 	useEffect(() => {
-		camera.position.set(0, 3, 8);
-		camera.lookAt(0, 0, 4);
+		camera.position.set(0, 7, 15).normalize().multiplyScalar(15);
+		camera.lookAt(0, 0, 8);
 	}, [camera]);
 
 	return <div className='w-full h-full inset-0 absolute'>

@@ -561,6 +561,13 @@ function Editor({ onChange }) {
 			}, context);
 			gradientNode.connect(bubbleNode2, gradientNode);
 			new_nodes.push(gradientNode);
+			
+			// const pinEdgesNode = new Node({
+			// 	x: startX + (nodeCount++) * tempNodeWidth,
+			// 	shader: new PinEdgesShader(),
+			// }, context);
+			// pinEdgesNode.connect(gradientNode, pinEdgesNode);
+			// new_nodes.push(pinEdgesNode);
 
 
 			addNode(...new_nodes);

@@ -21,7 +21,7 @@ function UI({ node, shader }) {
 	const sData = useShaderData(shader);
 
 	return <div className="absolute inset-0 p-2 bg-red flex flex-col justify-center items-center text-center">
-		<div className="absolute inset-0 pointer-events-none -z-10 inset-[3px] bg-black opacity-60" />
+		<div className="absolute pointer-events-none -z-10 inset-[3px] bg-black opacity-60" />
 		<div className="flex justify-stretch w-full pt-6">
 			<StrengthSlider shader={shader} />
 			<div>

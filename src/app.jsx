@@ -62,9 +62,9 @@ function App() {
 	const [lockUI, setLockUI] = useState(false);
 
 	const [shader, setShader] = useState();
-	const geometry = useMemo(() => new PlaneGeometry(1, 1, 512, 512), []);
+	const geometry = useMemo(() => new PlaneGeometry(1, 1, 1024, 1024), []);
 
-	const [meshScale, setMeshScale] = useState([30, 15, 1]);
+	const [meshScale, setMeshScale] = useState([50, 30, 1]);
 	const [meshRotation, setMeshRotation] = useState([Math.PI * 0.5, 0, 0]);
 
 

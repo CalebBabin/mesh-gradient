@@ -85,7 +85,7 @@ function UI({ node, shader }) {
 						/>
 					</label>
 
-					
+
 					<label>
 						scale:
 						<input
