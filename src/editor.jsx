@@ -519,7 +519,7 @@ function Editor({ onChange }) {
 		const timeout = setTimeout(() => {
 			if (nodes.length > 0) return;
 
-			const maxNodeCount = 5;
+			const maxNodeCount = 4;
 			const tempNodeWidth = nodeWidth + 50
 			const startX = (-maxNodeCount / 2) * tempNodeWidth + tempNodeWidth / 2;
 
@@ -527,13 +527,6 @@ function Editor({ onChange }) {
 			const new_nodes = [];
 			const startNode = new Node({ deletable: false, shader: new StartShader(), x: startX + (nodeCount++) * tempNodeWidth }, context);
 			new_nodes.push(startNode);
-
-			const checkerNode = new Node({
-				x: startX + (nodeCount++) * tempNodeWidth,
-				shader: new CheckerboardShader()
-			}, context);
-			checkerNode.connect(startNode, checkerNode);
-			new_nodes.push(checkerNode);
 
 
 			const bubbleNode = new Node({
@@ -543,7 +536,7 @@ function Editor({ onChange }) {
 					height: 0.5,
 				}),
 			}, context);
-			bubbleNode.connect(checkerNode, bubbleNode);
+			bubbleNode.connect(startNode, bubbleNode);
 			new_nodes.push(bubbleNode);
 
 			const bubbleNode2 = new Node({
