@@ -25,12 +25,44 @@ export class Node extends EventEmitter {
 	/**
 	 * @type {Node | undefined}
 	 */
-	in = undefined;
+	_in = undefined;
 	/**
 	 * @type {Node | undefined}
 	 */
-	out = undefined;
+	_out = undefined;
 	deletable = true;
+
+	get in() {
+		return this._in;
+	}
+
+	get out() {
+		return this._out;
+	}
+
+	set in(node) {
+		let retro = false;
+		if (this._in !== undefined) {
+			retro = this._in;
+		}
+		this._in = node;
+		this.broadcast('connection', this);
+		if (retro) {
+			retro.broadcast('connection', retro);
+		}
+	}
+
+	set out(node) {
+		let retro = false;
+		if (this._out !== undefined) {
+			retro = this._out;
+		}
+		this._out = node;
+		this.broadcast('connection', this);
+		if (retro) {
+			retro.broadcast('connection', retro);
+		}
+	}
 
 	static defaultProps = {
 		x: 0,
@@ -56,6 +88,9 @@ export class Node extends EventEmitter {
 		config.shader.on('recompile', () => {
 			this.recompile();
 		})
+		this.on('connection', () => {
+			this.recompile();
+		});
 	}
 
 	recompile() {
@@ -80,13 +115,13 @@ export class Node extends EventEmitter {
 	connect(connect_in, connect_out, propagate = true) {
 		if (connect_in === this) {
 			if (this.out) {
-				this.out.disconnect(this, false);
+				this.out.disconnect(this, true);
 			}
 			this.out = connect_out;
 			if (propagate) connect_out.connect(this, connect_out, false);
 		} else if (connect_out === this) {
 			if (this.in) {
-				this.in.disconnect(this, false);
+				this.in.disconnect(this, true);
 			}
 			this.in = connect_in;
 			if (propagate) connect_in.connect(connect_in, this, false);
@@ -216,12 +251,26 @@ function Connector({ nodeA, nodeB }) {
 	const b_data = useNodeData(nodeB);
 
 	return <>
-		{(!b_data || !a_data) ? null : <Line
+		{(!b_data || !a_data || (b_data.in === a_data) || (a_data.out === b_data)) ? null : <><Line
 			startX={a_data.x + nodeWidth / 2}
 			startY={a_data.y + nodeHeight / 2}
 			endX={b_data.x - nodeWidth / 2}
 			endY={b_data.y + nodeHeight / 2}
-		/>}
+		/>
+			<div
+				onDragStart={e => {
+					e.dataTransfer.setData('text/plain', nodeA.id);
+				}}
+				draggable={true}
+				style={{
+					transform: 'translate(' + (b_data.x + 10 - nodeWidth / 2 + 4) + 'px,' + (b_data.y + nodeHeight / 2) + 'px)',
+					boxShadow: ' inset 1px 1px #fff, inset 0px -2px grey, inset 2px 2px #dfdfdf',
+				}}
+				data-connector={true}
+				className="absolute z-20 top-1/2 left-1/2 -my-2 -mx-8 w-4 h-4 bg-[silver] hover:w-5 hover:h-5 rounded-l-full hover:bg-blue-600 cursor-grab"
+
+			/>
+		</>}
 		<div
 			onDragStart={e => {
 				e.dataTransfer.setData('text/plain', nodeA.id);
@@ -229,9 +278,10 @@ function Connector({ nodeA, nodeB }) {
 			draggable={true}
 			style={{
 				transform: 'translate(' + (a_data.x + 10 + nodeWidth / 2 - 4) + 'px,' + (a_data.y + nodeHeight / 2) + 'px)',
+				boxShadow: 'inset -1px -1px #0a0a0a, inset 0px 1px #dfdfdf, inset -2px -2px grey',
 			}}
 			data-connector={true}
-			className="absolute z-20 top-1/2 left-1/2 -my-2 w-4 h-4 bg-blue-300 hover:w-5 hover:h-5 rounded-r-full hover:bg-blue-600"
+			className="absolute z-20 top-1/2 left-1/2 -my-2 w-4 h-4 bg-[silver] hover:w-5 hover:h-5 rounded-r-full hover:bg-blue-600 cursor-grab"
 		/>
 	</>;
 }
