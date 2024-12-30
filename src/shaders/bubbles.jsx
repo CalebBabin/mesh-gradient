@@ -21,13 +21,10 @@ function UI({ node, shader }) {
 	const sData = useShaderData(shader);
 
 	return <div className="absolute inset-0 p-2 bg-red flex flex-col justify-center items-center text-center">
-		<div className="absolute inset-0 pointer-events-none -z-10  bg-black opacity-60" />
+		<div className="absolute inset-0 pointer-events-none -z-10 inset-[3px] bg-black opacity-60" />
 		<div className="flex justify-stretch w-full pt-6">
 			<StrengthSlider shader={shader} />
 			<div>
-				<span className="relative z-10 font-thin text-3xl text-cyan-100">
-					bubbles
-				</span>
 				<div className="field-row w-full">
 					<label>size:</label>
 					<label>1</label>

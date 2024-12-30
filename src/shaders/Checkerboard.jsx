@@ -20,14 +20,11 @@ function UI({ node, shader }) {
 		<div style={{
 			backgroundImage: 'url(/checkerboard.svg)',
 			backgroundSize: ((node.id + 2) % 3 === 0 ? '512px' : '1024px'),
-		}} className={"absolute inset-0 pointer-events-none -z-20 " + (node.id % 2 === 0 ? "rotate-180" : "")} />
-		<div className="absolute inset-0 pointer-events-none -z-10  bg-black opacity-60" />
+		}} className={"absolute inset-[3px] pointer-events-none -z-20 " + (node.id % 2 === 0 ? "rotate-180" : "")} />
+		<div className="absolute inset-[3px] pointer-events-none -z-10 bg-black opacity-60" />
 		<div className="flex justify-stretch w-full pt-6">
 			<StrengthSlider shader={shader} />
 			<div className="flex flex-col justify-center items-center">
-				<span className="relative z-10 font-thin text-3xl text-cyan-100">
-					checkerboard
-				</span>
 				<div className="flex items-center justify-between">
 					<div className="w-[75%]">
 						<div className="flex gap-2 mb-2 items-center">

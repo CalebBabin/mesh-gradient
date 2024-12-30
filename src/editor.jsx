@@ -64,7 +64,7 @@ export class Node extends EventEmitter {
 		}
 	}
 
-	static defaultProps = {
+	static defaults = {
 		x: 0,
 		y: 0,
 		deletable: true,
@@ -74,7 +74,7 @@ export class Node extends EventEmitter {
 		super();
 		this.context = context;
 		context.nodeMap.set(this.id, this);
-		const config = Object.assign({ ...Node.defaultProps }, props);
+		const config = Object.assign({ ...Node.defaults }, props);
 
 		this.x = config.x;
 		this.y = config.y;
@@ -268,7 +268,7 @@ function Connector({ nodeA, nodeB }) {
 					boxShadow: ' inset 1px 1px #fff, inset 0px -2px grey, inset 2px 2px #dfdfdf',
 				}}
 				data-connector={true}
-				className="absolute z-20 top-1/2 left-1/2 -my-2 -mx-8 w-4 h-4 bg-[silver] hover:w-5 hover:h-5 rounded-l-full hover:bg-blue-600 cursor-grab"
+				className="absolute z-10 top-1/2 left-1/2 -my-2 -mx-[calc(1.75rem-1.5px)] w-4 h-4 bg-[silver] hover:w-5 hover:h-5 rounded-l-full hover:bg-blue-600 cursor-grab"
 
 			/>
 		</>}
@@ -282,7 +282,7 @@ function Connector({ nodeA, nodeB }) {
 				boxShadow: 'inset -1px -1px #0a0a0a, inset 0px 1px #dfdfdf, inset -2px -2px grey',
 			}}
 			data-connector={true}
-			className="absolute z-20 top-1/2 left-1/2 -my-2 w-4 h-4 bg-[silver] hover:w-5 hover:h-5 rounded-r-full hover:bg-blue-600 cursor-grab"
+			className="absolute z-10 top-1/2 left-1/2 -my-2 -mx-[calc(0.5rem-1px)] w-4 h-4 bg-[silver] hover:w-5 hover:h-5 rounded-r-full hover:bg-blue-600 cursor-grab"
 		/>
 	</>;
 }
@@ -406,7 +406,7 @@ function NodeRenderer({ node }) {
 			onDragExit={e => {
 				setOutlined(false);
 			}}
-			className={"absolute z-10 text-white box-border"}
+			className={"absolute text-white box-border"}
 			style={{
 				transform: 'translate(' + data.x + 'px, ' + data.y + 'px)',
 				outline: outlined ? '2px dashed blue' : '',
@@ -416,12 +416,12 @@ function NodeRenderer({ node }) {
 				marginHeight: -nodeHeight / 2 + 'px',
 			}}
 		>
-			<div className="absolute inset-0 -m-2 window -z-50">
+			<div className="absolute inset-0 window -z-50">
 				<div className="window-body absolute inset-0" />
 			</div>
 
-			<div className="title-bar relative z-50 gap-4">
-				<div className="title-bar-text cursor-move w-full px-2 py-1" ref={handleRef}>
+			<div className="title-bar relative z-50 gap-4 absolute top-0 left-0 right-0 m-[3px]">
+				<div className="title-bar-text cursor-move w-full px-2 py-0.5" ref={handleRef}>
 					{node.shader.type}
 				</div>
 				<BlendModeSelector shader={data.shader} />
