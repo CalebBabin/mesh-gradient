@@ -15,6 +15,8 @@ import { BaseShader, StrengthSlider, useShaderData } from "./BASE.jsx";
 function UI({ node, shader }) {
 	const sData = useShaderData(shader);
 
+	const sliderResolution = 1000;
+
 	return <div className="absolute inset-0 p-2 bg-red flex flex-col justify-center items-center text-center">
 		<div className="flex justify-stretch w-full pt-6 text-black">
 			<StrengthSlider shader={shader} />
@@ -32,7 +34,6 @@ function UI({ node, shader }) {
 					}} />
 				</span>
 
-
 				<div>
 					<input
 						type="checkbox"
@@ -47,6 +48,34 @@ function UI({ node, shader }) {
 					</label>
 				</div>
 
+				<div>
+					<input
+						className="has-box-indicator"
+						type="range"
+						min="0"
+						max={sliderResolution}
+						step="1"
+						value={Math.min(sData.minHeight, sData.maxHeight) * sliderResolution}
+						onChange={e => {
+							shader.data = {
+								minHeight: e.target.value / sliderResolution,
+							}
+						}}
+					/>
+					<input
+						className="has-box-indicator"
+						type="range"
+						min="0"
+						max={sliderResolution}
+						step="1"
+						value={Math.max(sData.minHeight, sData.maxHeight) * sliderResolution}
+						onChange={e => {
+							shader.data = {
+								maxHeight: e.target.value / sliderResolution,
+							}
+						}}
+					/>
+				</div>
 			</div>
 		</div>
 	</div>;
@@ -62,6 +91,9 @@ export class HeightGradientShader extends BaseShader {
 		blendMode: 'multiply',
 		colorA: { r: 74, g: 236, b: 255, a: 1 },
 		colorB: { r: 255, g: 0, b: 142, a: 1 },
+
+		minHeight: -0.1,
+		maxHeight: 1,
 	};
 
 	constructor(data = {}) {
@@ -78,15 +110,33 @@ export class HeightGradientShader extends BaseShader {
 	}
 
 	compile() {
-		const colorA = rgbToLch(this.data.colorA);
-		const colorB = rgbToLch(this.data.colorB);
+		const data = this.data;
+		const colorA = rgbToLch(data.colorA);
+		const colorB = rgbToLch(data.colorB);
 
+		const minHeight = (Math.min(data.minHeight, data.maxHeight) - 0.5) * 30.0;
+		const maxHeight = (Math.max(data.minHeight, data.maxHeight) - 0.5) * 30.0;
+
+		console.log(minHeight, maxHeight);
 		return {
 			fragment: /*glsl*/`
 				vec4 colorA = vec4(${trailZero(colorA.l)}, ${trailZero(colorA.c)}, ${trailZero(colorA.h)}, ${trailZero(colorA.a)});
 				vec4 colorB = vec4(${trailZero(colorB.l)}, ${trailZero(colorB.c)}, ${trailZero(colorB.h)}, ${trailZero(colorB.a)});
 
-				color = lch_to_rgb(mix(colorA, colorB, vPos.y));
+				float minHeight = ${trailZero(minHeight)};
+				float maxHeight = ${trailZero(maxHeight)};
+
+				color = lch_to_rgb(
+					mix(
+						colorA, 
+						colorB, 
+						min(1.0, 
+							max(0.0, 
+								(vPos.y - minHeight) / (maxHeight - minHeight)
+							)
+						)
+					)
+				);
 			`
 		}
 	}
