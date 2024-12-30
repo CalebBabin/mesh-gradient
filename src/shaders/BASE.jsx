@@ -3,7 +3,29 @@ import { EventEmitter } from "../emitter";
 import GLSL_colorSpaces from './colorSpaces.glsl?raw';
 import GLSL_simplexNoise3D from './simplex.glsl?raw';
 import { useEffect, useState } from "react";
-import { list } from "postcss";
+import { trailZero } from "../utils";
+
+export function StrengthSlider({ shader }) {
+	const shaderData = useShaderData(shader);
+
+	return <div className="field-row w-6">
+		<div className="is-vertical">
+			<input
+				className="has-box-indicator"
+				type="range"
+				min="0"
+				max="255"
+				step="1"
+				value={shaderData.strength ?? 255}
+				onChange={e => {
+					shader.data = {
+						strength: e.target.value,
+					}
+				}}
+			/>
+		</div>
+	</div>
+}
 
 function UI({ node, shader }) {
 	return <div className="absolute inset-0 bg-red flex justify-center items-center text-center">
@@ -65,16 +87,12 @@ export class BaseShader extends EventEmitter {
 	}
 }
 
-const blendModes = {
-	'add': /*glsl*/`
-		gl_FragColor += color;
-	`,
-	'subtract': /*glsl*/`
-		gl_FragColor -= color;
-	`,
-	'multiply': /*glsl*/`
-		gl_FragColor *= color;
-	`,
+export const blendModes = {
+	'add': /*glsl*/`+`,
+	'subtract': /*glsl*/`-`,
+	'multiply': /*glsl*/`*`,
+	'divide': /*glsl*/`/`,
+	'set': /*glsl*/`=`,
 }
 
 /**
@@ -112,6 +130,7 @@ export function compileShaders(startNode) {
 			}
 			vUv *= vec2(uScale);
 			originalUv = vec2(uv.x, uv.y);
+			vec3 final_offset = vec3(0.0);
 			vec3 offset = vec3(0.0);
 			vertexNoise = vec2(
 				simplexNoise3D(vec3(vUv.x * 0.25, vUv.y * 1.0, (uTime / 30000.0) * 0.3)),
@@ -144,17 +163,20 @@ export function compileShaders(startNode) {
 		}
 		recordedNodes.push(node);
 
-		if (!node.shader) continue;
+		const shader = node.shader;
+		if (!shader) continue;
 		try {
-			const { fragment, vertex } = node.shader.compile();
-			console.log(fragment);
-
+			const { fragment, vertex } = shader.compile();
 			if (fragment) compiledFrag += `{
 				color = vec4(1.0);
 				${fragment}
-				${blendModes[node.shader.data.blendMode ?? 'add']}
+				gl_FragColor = mix(gl_FragColor, gl_FragColor ${blendModes[shader.data.blendMode ?? 'add']} color, ${trailZero((shader.data.strength ?? 255) / 255)});
 			}`;
-			if (vertex) compiledVert += '\n{\n' + vertex + '\n}\n';
+			if (vertex) compiledVert += `{
+				offset = vec3(0.0);
+				${vertex}
+				final_offset = mix(final_offset, final_offset ${blendModes[shader.data.blendMode ?? 'add']} offset, ${trailZero((shader.data.strength ?? 255) / 255)});
+			}`;
 		} catch (e) {
 			console.error(e);
 			console.error('error compiling shader');
@@ -164,7 +186,7 @@ export function compileShaders(startNode) {
 
 	compiledFrag += '\n}';
 	compiledVert += `
-		gl_Position = projectionMatrix * modelViewMatrix * vec4(position + vec3(offset.x, offset.z, offset.y), 1.0);
+		gl_Position = projectionMatrix * modelViewMatrix * vec4(position + vec3(final_offset.x, final_offset.z, final_offset.y), 1.0);
 	}
 	`;
 

@@ -1,7 +1,4 @@
-import { useEffect, useState } from "react";
-import { trailZero } from "../utils.js";
-import { BaseShader, useShaderData } from "./BASE.jsx";
-import { XYInput } from "../utils/xyzInput.jsx";
+import { BaseShader, StrengthSlider, useShaderData } from "./BASE.jsx";
 
 
 /** @typedef {import('../editor.jsx').Node} Node */
@@ -22,10 +19,12 @@ function UI({ node, shader }) {
 
 	return <div className="absolute inset-0 p-2 bg-red flex flex-col justify-center items-center text-center">
 		<div className="absolute inset-0 pointer-events-none -z-10  bg-black opacity-60" />
-		<span className="relative z-10 font-thin text-3xl text-cyan-100">
-			gradient
-		</span>
-
+		<div className="flex justify-stretch w-full pt-6">
+			<StrengthSlider shader={shader} />
+			<span className="relative z-10 font-thin text-3xl text-cyan-100">
+				gradient
+			</span>
+		</div>
 	</div>;
 };
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { trailZero } from "../utils";
-import { BaseShader, useShaderData } from "./BASE";
+import { BaseShader, StrengthSlider, useShaderData } from "./BASE";
 import { XYInput } from "../utils/xyzInput.jsx";
 /** @typedef {import('../editor.jsx').Node} Node */
 
@@ -22,102 +22,106 @@ function UI({ node, shader }) {
 			backgroundSize: ((node.id + 2) % 3 === 0 ? '512px' : '1024px'),
 		}} className={"absolute inset-0 pointer-events-none -z-20 " + (node.id % 2 === 0 ? "rotate-180" : "")} />
 		<div className="absolute inset-0 pointer-events-none -z-10  bg-black opacity-60" />
-		<span className="relative z-10 font-thin text-3xl text-cyan-100">
-			checkerboard
-		</span>
-		<div className="flex items-center justify-between">
-			<div className="w-[75%]">
-				<div className="flex gap-2 mb-2 items-center">
-					<button onClick={() => {
-						shader.data = {
-							x: Math.floor(Math.random() * maxBuffer),
-							y: Math.floor(Math.random() * maxBuffer),
-							speed: [Math.random() * 2 - 1, Math.random() * 2 - 1],
-							doubleChecker: Math.floor(Math.random() * maxBuffer),
-						};
-					}} className="relative z-10 font-thin">
-						random
-					</button>
+		<div className="flex justify-stretch w-full pt-6">
+			<StrengthSlider shader={shader} />
+			<div className="flex flex-col justify-center items-center">
+				<span className="relative z-10 font-thin text-3xl text-cyan-100">
+					checkerboard
+				</span>
+				<div className="flex items-center justify-between">
+					<div className="w-[75%]">
+						<div className="flex gap-2 mb-2 items-center">
+							<button onClick={() => {
+								shader.data = {
+									x: Math.floor(Math.random() * maxBuffer),
+									y: Math.floor(Math.random() * maxBuffer),
+									speed: [Math.random() * 2 - 1, Math.random() * 2 - 1],
+									doubleChecker: Math.floor(Math.random() * maxBuffer),
+								};
+							}} className="relative z-10 font-thin">
+								random
+							</button>
+							<div>
+								<input
+									type="checkbox"
+									id={"lockAspect" + node.id}
+									checked={!!lockAspect}
+									onChange={e => {
+										setLockAspect(e.target.checked);
+									}}
+								/>
+								<label htmlFor={"lockAspect" + node.id}>
+									lock ratio?
+								</label>
+							</div>
+						</div>
+						<div className="field-row w-full">
+							<label>x:</label>
+							<label>0.1</label>
+							<input
+								className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+								type="range"
+								min="0"
+								max={maxBuffer}
+								value={shaderData.x}
+								onChange={e => {
+									const v = Number(e.target.value);
+									shader.data = {
+										x: v,
+										y: lockAspect ? v : shaderData.y
+									}
+								}}
+							/>
+							<label>{maxBuffer}</label>
+						</div>
+						<div className="field-row w-full">
+							<label>y:</label>
+							<label>0.1</label>
+							<input
+								className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+								type="range"
+								min={0}
+								step={1}
+								max={maxBuffer}
+								value={shaderData.y}
+								onChange={e => {
+									const v = Number(e.target.value);
+									shader.data = {
+										x: lockAspect ? v : shaderData.x,
+										y: v,
+									}
+								}}
+							/>
+							<label>{maxBuffer}</label>
+						</div>
+						<div className="field-row w-full">
+							<label>double:</label>
+							<label>0</label>
+							<input
+								className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+								type="range"
+								min={0}
+								step={1}
+								max={maxBuffer}
+								value={shader.doubleChecker}
+								onChange={e => {
+									shader.data = {
+										doubleChecker: Number(e.target.value),
+									}
+								}}
+							/>
+							<label>20</label>
+						</div>
+
+					</div>
 					<div>
-						<input
-							type="checkbox"
-							id={"lockAspect" + node.id}
-							checked={!!lockAspect}
-							onChange={e => {
-								setLockAspect(e.target.checked);
-							}}
-						/>
-						<label htmlFor={"lockAspect" + node.id}>
-							lock ratio?
-						</label>
+						<XYInput data={shaderData.speed} onChange={v => {
+							shader.data = {
+								speed: v,
+							}
+						}} />
 					</div>
 				</div>
-				<div className="field-row w-full">
-					<label>x:</label>
-					<label>0.1</label>
-					<input
-						className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-						type="range"
-						min="0"
-						max={maxBuffer}
-						value={shaderData.x}
-						onChange={e => {
-							const v = Number(e.target.value);
-							shader.data = {
-								x: v,
-								y: lockAspect ? v : shaderData.y
-							}
-						}}
-					/>
-					<label>{maxBuffer}</label>
-				</div>
-				<div className="field-row w-full">
-					<label>y:</label>
-					<label>0.1</label>
-					<input
-						className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-						type="range"
-						min={0}
-						step={1}
-						max={maxBuffer}
-						value={shaderData.y}
-						onChange={e => {
-							const v = Number(e.target.value);
-							shader.data = {
-								x: lockAspect ? v : shaderData.x,
-								y: v,
-							}
-						}}
-					/>
-					<label>{maxBuffer}</label>
-				</div>
-				<div className="field-row w-full">
-					<label>double:</label>
-					<label>0</label>
-					<input
-						className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-						type="range"
-						min={0}
-						step={1}
-						max={maxBuffer}
-						value={shader.doubleChecker}
-						onChange={e => {
-							shader.data = {
-								doubleChecker: Number(e.target.value),
-							}
-						}}
-					/>
-					<label>20</label>
-				</div>
-
-			</div>
-			<div>
-
-				<XYInput data={shaderData.speed} onChange={v => {
-					shader.data = {
-						speed: v,
-					}
-				}} />
 			</div>
 		</div>
 	</div>;

@@ -1,8 +1,8 @@
 import { Delete, DragIndicator } from "@mui/icons-material";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { EventEmitter } from "./emitter";
-import { StartShader, StopShader } from "./shaders/StartStopUtils";
-import { compileShaders } from "./shaders/BASE";
+import { StartShader } from "./shaders/StartStopUtils";
+import { blendModes, compileShaders, useShaderData } from "./shaders/BASE";
 import { CheckerboardShader } from "./shaders/Checkerboard";
 import { BubbleShader } from "./shaders/bubbles";
 import { SimpleGradientShader } from "./shaders/simplegradient";
@@ -73,8 +73,6 @@ export class Node extends EventEmitter {
 	constructor(props, context) {
 		super();
 		this.context = context;
-		console.log('new node', this.id, this);
-		console.log('context', context);
 		context.nodeMap.set(this.id, this);
 		const config = Object.assign({ ...Node.defaultProps }, props);
 
@@ -300,6 +298,19 @@ const getUIXY = (e) => {
 	}
 }
 
+function BlendModeSelector({ shader }) {
+	const data = useShaderData(shader);
+	const blendMode = data.blendMode ?? 'add';
+
+	return <select className="pointer-events-auto" value={blendMode} onChange={e => {
+		shader.data = {
+			blendMode: e.target.value,
+		}
+	}}>
+		${Object.keys(blendModes).map(mode => <option key={mode}>{mode}</option>)}
+	</select>
+}
+
 /**
  * @param {Node} node
  */
@@ -416,7 +427,7 @@ function NodeRenderer({ node }) {
 				>
 					<Delete />
 				</button>
-				<span />
+				<BlendModeSelector shader={data.shader} />
 				<button
 					className="cursor-move pointer-events-auto"
 					ref={handleRef}
@@ -563,6 +574,7 @@ function Editor({ onChange }) {
 	useEffect(() => {
 		const listenNodes = [];
 		function listener(node) {
+			console.log('deleting node', node)
 			deleteNode(node);
 		}
 		function recompileListener() {

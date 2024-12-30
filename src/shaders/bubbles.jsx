@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { trailZero } from "../utils";
-import { BaseShader, useShaderData } from "./BASE";
+import { BaseShader, StrengthSlider, useShaderData } from "./BASE";
 import { XYInput } from "../utils/xyzInput.jsx";
 
 
@@ -22,50 +22,55 @@ function UI({ node, shader }) {
 
 	return <div className="absolute inset-0 p-2 bg-red flex flex-col justify-center items-center text-center">
 		<div className="absolute inset-0 pointer-events-none -z-10  bg-black opacity-60" />
-		<span className="relative z-10 font-thin text-3xl text-cyan-100">
-			bubbles
-		</span>
-		<div className="field-row w-full">
-			<label>size:</label>
-			<label>1</label>
-			<input
-				className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-				type="range"
-				min="1"
-				max={maxSize}
-				value={((1 - sData.size) * maxSize)}
-				onChange={e => {
-					shader.data = {
-						size: (maxSize - Number(e.target.value)) / maxSize,
-					}
-				}}
-			/>
-			<label>{Number(maxSize).toLocaleString('en-US')}</label>
-		</div>
-		<div className="field-row w-full">
-			<label>height:</label>
-			<label>0</label>
-			<input
-				className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-				type="range"
-				min={0}
-				step={1}
-				max={maxHeight}
-				value={sData.height * maxHeight || 0}
-				onChange={e => {
-					shader.data = {
-						height: e.target.value / maxHeight
-					};
-				}}
-			/>
-			<label>{maxHeight}</label>
-		</div>
+		<div className="flex justify-stretch w-full pt-6">
+			<StrengthSlider shader={shader} />
+			<div>
+				<span className="relative z-10 font-thin text-3xl text-cyan-100">
+					bubbles
+				</span>
+				<div className="field-row w-full">
+					<label>size:</label>
+					<label>1</label>
+					<input
+						className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+						type="range"
+						min="1"
+						max={maxSize}
+						value={((1 - sData.size) * maxSize)}
+						onChange={e => {
+							shader.data = {
+								size: (maxSize - Number(e.target.value)) / maxSize,
+							}
+						}}
+					/>
+					<label>{Number(maxSize).toLocaleString('en-US')}</label>
+				</div>
+				<div className="field-row w-full">
+					<label>height:</label>
+					<label>0</label>
+					<input
+						className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+						type="range"
+						min={0}
+						step={1}
+						max={maxHeight}
+						value={sData.height * maxHeight || 0}
+						onChange={e => {
+							shader.data = {
+								height: e.target.value / maxHeight
+							};
+						}}
+					/>
+					<label>{maxHeight}</label>
+				</div>
 
-		<XYInput data={sData.speed} onChange={v => {
-			shader.data = {
-				speed: v,
-			};
-		}} />
+				<XYInput data={sData.speed} onChange={v => {
+					shader.data = {
+						speed: v,
+					};
+				}} />
+			</div>
+		</div>
 	</div>;
 };
 
