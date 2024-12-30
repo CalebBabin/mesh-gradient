@@ -115,6 +115,14 @@ export class BubbleShader extends BaseShader {
             float localX = (initialX - floor(initialX));
             float localY = (initialY - floor(initialY));
 
+			if (mod(floor(initialY), 2.0) == 0.0) {
+				if (localX < 0.5) {
+					localX += 0.5;
+				} else {
+					localX -= 0.5;
+				}
+			}
+
             float distToCenterOfTile = 1.0 - min(0.5, distance(
                 vec2(
                     localX,
