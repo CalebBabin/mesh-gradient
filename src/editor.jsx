@@ -421,7 +421,7 @@ function NodeRenderer({ node }) {
 				<div className="window-body absolute inset-0" />
 			</div>
 
-			<div className="title-bar py-0 relative z-50 gap-4 absolute top-0 left-0 right-0 m-[3px]">
+			<div className="title-bar py-[0!important] relative z-50 gap-4 absolute top-0 left-0 right-0 m-[3px]">
 				<div className="title-bar-text cursor-move w-full px-2 py-0.5" ref={handleRef}>
 					{node.shader.type}
 				</div>
@@ -431,7 +431,7 @@ function NodeRenderer({ node }) {
 					<button aria-label="Maximize" />
 					<button aria-label="Close"
 						style={{
-							display: data.deletable === false ? 'none' : 'block',
+							display: data.deletable === false ? 'none' : '',
 						}} onClick={() => {
 							node.delete();
 						}}
