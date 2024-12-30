@@ -6,6 +6,7 @@ import { blendModes, compileShaders, useShaderData } from "./shaders/BASE";
 import { CheckerboardShader } from "./shaders/Checkerboard";
 import { BubbleShader } from "./shaders/bubbles";
 import { SimpleGradientShader } from "./shaders/simplegradient";
+import { HeightGradientShader } from "./shaders/heightGradient";
 
 const nodeWidth = 300;
 const nodeHeight = 200;
@@ -598,6 +599,7 @@ const availableShaders = [
 	CheckerboardShader,
 	BubbleShader,
 	SimpleGradientShader,
+	HeightGradientShader,
 ];
 function AddNodePopup({ addNode }) {
 	const context = useContext(NodeContext);

@@ -107,6 +107,8 @@ export function compileShaders(startNode) {
 		varying vec2 originalUv;
 		varying vec2 vertexNoise;
 
+		varying vec3 vPos;
+
 		uniform vec2 viewportSize;
 		uniform float uTime;
 		uniform float uScale;
@@ -201,6 +203,7 @@ export function compileShaders(startNode) {
 
 	compiledFrag += '\n}';
 	compiledVert += `
+		vPos = final_offset;
 		gl_Position = projectionMatrix * modelViewMatrix * vec4(position + vec3(final_offset.x, final_offset.z, final_offset.y), 1.0);
 	}
 	`;

@@ -10,7 +10,6 @@ import { BaseShader, StrengthSlider, useShaderData } from "./BASE.jsx";
 const maxSize = 500;
 const maxHeight = 5000;
 
-
 /**
  * 
  * @param {Node} node
@@ -57,8 +56,8 @@ function UI({ node, shader }) {
 	</div>;
 };
 
-const type = "SimpleGradient";
-export class SimpleGradientShader extends BaseShader {
+const type = "HeightGradient";
+export class HeightGradientShader extends BaseShader {
 	static type = type;
 	type = type;
 	UI = UI;
@@ -91,7 +90,7 @@ export class SimpleGradientShader extends BaseShader {
 				vec4 colorA = vec4(${trailZero(colorA.l)}, ${trailZero(colorA.c)}, ${trailZero(colorA.h)}, ${trailZero(colorA.a)});
 				vec4 colorB = vec4(${trailZero(colorB.l)}, ${trailZero(colorB.c)}, ${trailZero(colorB.h)}, ${trailZero(colorB.a)});
 
-				color = lch_to_rgb(mix(colorA, colorB, ${this.data.yAxis ? 'originalUv.y' : 'originalUv.x'}));
+				color = lch_to_rgb(mix(colorA, colorB, vPos.y));
 			`
 		}
 	}
