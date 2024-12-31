@@ -118,11 +118,11 @@ export class WaveShader extends BaseShader {
                 vec3 scale = vec3(${trailZero((scale[0] ?? 1.0) * scaleFactor)}, ${trailZero((scale[1] ?? 1.0) * scaleFactor)}, ${trailZero((scale[2] ?? 1.0) * scaleFactor)});
                 float slowTime = uTime * 0.0001;
 
-                offset.y += simplexNoise3D(vec3(
+                offset.y = (simplexNoise3D(vec3(
                     vUv.x * scale.x + slowTime * speed.x,
                     vUv.y * scale.y + slowTime * speed.y,
                     slowTime
-                )) * ${trailZero(height)};
+                )) - 1.0) * ${trailZero(height)};
             `}
     }
 }

@@ -548,8 +548,9 @@ function Editor({ onChange }) {
 				new Node({
 					x: startX + (nodeCount++) * tempNodeWidth,
 					shader: new WaveShader({
+						blendMode: 'subtract',
 						size: 0.4,
-						height: 0.35,
+						height: 0.5,
 						scaleFactor: 0.5,
 					}),
 				}, context),
