@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { trailZero } from "../utils";
 import { BaseShader, StrengthSlider, useShaderData } from "./BASE";
 import { XYInput } from "../utils/xyzInput.jsx";
+import { ColorPicker } from "../utils/colorPicker.jsx";
 /** @typedef {import('../editor.jsx').Node} Node */
 
 
@@ -111,10 +112,16 @@ function UI({ node, shader }) {
 						</div>
 
 					</div>
-					<div>
+					<div className="flex flex-col gap-4 justify-center items-center pl-2">
 						<XYInput data={shaderData.speed} onChange={v => {
 							shader.data = {
 								speed: v,
+							}
+						}} />
+
+						<ColorPicker color={shaderData.color} onChange={color => {
+							shader.data = {
+								color: color.rgb,
 							}
 						}} />
 					</div>
@@ -135,7 +142,8 @@ export class CheckerboardShader extends BaseShader {
 		y: 50,
 		doubleChecker: 5,
 		speed: [-0.5, 0.5, 1],
-		blendMode: 'multiply',
+		color: { r: 255, g: 255, b: 255, a: 0.2 },
+		blendMode: 'set',
 	};
 
 	constructor(data = {}) {
@@ -149,6 +157,7 @@ export class CheckerboardShader extends BaseShader {
 
 		const detailX = data.x + 1;
 		const detailY = data.y + 1;
+		console.log(data.color, `vec4(${trailZero(data.color.r / 255)}, ${trailZero(data.color.g / 255)}, ${trailZero(data.color.b / 255)}, 1.0)`);
 		return {
 			fragment: /*glsl*/`
 		vec3 speed = vec3(${trailZero(data.speed[0])}, ${trailZero(data.speed[1])}, ${trailZero(data.speed[2])});
@@ -156,13 +165,23 @@ export class CheckerboardShader extends BaseShader {
 
 		float x = (vUv.x + slowTime * speed.x) * ${trailZero(detailX)};
 		float y = (vUv.y + slowTime * speed.y) * ${trailZero(detailY)};
+		color = gl_FragColor;
 		if (mod(floor(x) + floor(y), 2.0) == 0.0) {
 			if (mod(
 				floor(x * ${trailZero(data.doubleChecker)}) +
 				floor(y * ${trailZero(data.doubleChecker)}),
 				2.0
 			) == 0.0) {
-				color *= vec4(0.5, 0.5, 0.5, 1.0);
+				color = mix(
+					gl_FragColor,
+					vec4(
+						${trailZero(data.color.r / 255)},
+						${trailZero(data.color.g / 255)},
+						${trailZero(data.color.b / 255)},
+						1.0
+					),
+					${trailZero(data.color.a)}
+				);
 			}
 		}`}
 	}

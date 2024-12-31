@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { trailZero } from "../utils";
 import { BaseShader, StrengthSlider, useShaderData } from "./BASE";
 import { XYInput } from "../utils/xyzInput.jsx";

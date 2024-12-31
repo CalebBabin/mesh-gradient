@@ -130,6 +130,7 @@ export class HeightGradientShader extends BaseShader {
 
 		this.data = {
 			...this.defaults,
+			...data,
 		};
 	}
 

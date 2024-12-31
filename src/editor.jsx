@@ -8,6 +8,7 @@ import { BubbleShader } from "./shaders/bubbles";
 import { SimpleGradientShader } from "./shaders/simplegradient";
 import { HeightGradientShader } from "./shaders/heightGradient";
 import { PinEdgesShader } from "./shaders/pinEdges";
+import { WaveShader } from "./shaders/waves";
 
 const nodeWidth = 300;
 const nodeHeight = 200;
@@ -270,7 +271,7 @@ function Connector({ nodeA, nodeB }) {
 					boxShadow: ' inset 1px 1px #fff, inset 0px -2px grey, inset 2px 2px #dfdfdf',
 				}}
 				data-connector={true}
-				className="absolute z-10 top-1/2 left-1/2 -my-2 -mx-[calc(1.75rem-1.5px)] w-4 h-4 bg-[silver] hover:w-5 hover:h-5 rounded-l-full hover:bg-blue-600 cursor-grab"
+				className="absolute z-10 top-1/2 left-1/2 -my-2 -mx-[calc(1.75rem-2.5px)] w-4 h-4 bg-[silver] hover:w-5 hover:h-5 rounded-l-full hover:bg-blue-600 cursor-grab"
 
 			/>
 		</>}
@@ -526,49 +527,49 @@ function Editor({ onChange }) {
 			const startX = (-maxNodeCount / 2) * tempNodeWidth + tempNodeWidth / 2;
 
 			let nodeCount = 0;
-			const new_nodes = [];
-			const startNode = new Node({ deletable: false, shader: new StartShader(), x: startX + (nodeCount++) * tempNodeWidth }, context);
-			new_nodes.push(startNode);
+			const new_nodes = [
+				new Node({ deletable: false, shader: new StartShader(), x: startX + (nodeCount++) * tempNodeWidth }, context),
+				new Node({
+					x: startX + (nodeCount++) * tempNodeWidth,
+					shader: new BubbleShader({
+						size: 0.3,
+						height: 0.5,
+					}),
+				}, context),
+				new Node({
+					x: startX + (nodeCount++) * tempNodeWidth,
+					shader: new WaveShader({
+						size: 0.5,
+						height: 0.5,
+					}),
+				}, context),
+				new Node({
+					x: startX + (nodeCount++) * tempNodeWidth,
+					shader: new WaveShader({
+						size: 0.5,
+						height: 0.5,
+					}),
+				}, context),
+				new Node({
+					x: startX + (nodeCount++) * tempNodeWidth,
+					shader: new WaveShader({
+						size: 0.5,
+						height: 0.5,
+					}),
+				}, context),
+				new Node({
+					x: startX + (nodeCount++) * tempNodeWidth,
+					shader: new HeightGradientShader({
+						minHeight: 0.35,
+						maxHeight: 0.7,
+						scale: 10
+					}),
+				}, context),
+			];
 
-
-			const bubbleNode = new Node({
-				x: startX + (nodeCount++) * tempNodeWidth,
-				shader: new BubbleShader({
-					size: 0.3,
-					height: 0.5,
-				}),
-			}, context);
-			bubbleNode.connect(startNode, bubbleNode);
-			new_nodes.push(bubbleNode);
-
-			const bubbleNode2 = new Node({
-				x: startX + (nodeCount++) * tempNodeWidth,
-				shader: new BubbleShader({
-					size: 0.5,
-					height: 0.5,
-				}),
-			}, context);
-			bubbleNode2.connect(bubbleNode, bubbleNode2);
-			new_nodes.push(bubbleNode2);
-
-
-			const gradientNode = new Node({
-				x: startX + (nodeCount++) * tempNodeWidth,
-				shader: new HeightGradientShader({
-					minHeight: 0.43,
-					maxHeight: 0.51,
-				}),
-			}, context);
-			gradientNode.connect(bubbleNode2, gradientNode);
-			new_nodes.push(gradientNode);
-			
-			// const pinEdgesNode = new Node({
-			// 	x: startX + (nodeCount++) * tempNodeWidth,
-			// 	shader: new PinEdgesShader(),
-			// }, context);
-			// pinEdgesNode.connect(gradientNode, pinEdgesNode);
-			// new_nodes.push(pinEdgesNode);
-
+			for (let i = 1; i < new_nodes.length; i++) {
+				new_nodes[i].connect(new_nodes[i-1], new_nodes[i]);
+			}
 
 			addNode(...new_nodes);
 		}, 1000);
