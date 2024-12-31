@@ -561,10 +561,6 @@ function Editor({ onChange }) {
 						scale: 10
 					}),
 				}, context),
-				new Node({
-					x: startX + (nodeCount++) * tempNodeWidth,
-					shader: new PinEdgesShader(),
-				}, context),
 			];
 
 			for (let i = 1; i < new_nodes.length; i++) {
