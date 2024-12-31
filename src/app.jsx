@@ -61,8 +61,6 @@ function App() {
 	useEffect(() => {
 		window.location.href = 'https://gradient.tapetools.io';
 	}, []);
-
-	const visible = lockUI || !hideUI;
 	return (
 		<>
 			Project has moved! check out <a href="https://gradient.tapetools.io">https://gradient.tapetools.io</a>
