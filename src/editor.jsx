@@ -427,14 +427,14 @@ function NodeRenderer({ node }) {
 				<div className="title-bar-text cursor-move w-full px-2 py-0.5" ref={handleRef}>
 					{node.shader.type}
 				</div>
-				<BlendModeSelector shader={data.shader} />
-				<div className="title-bar-controls">
+				{node.shader.type !== 'StartShader' ? <BlendModeSelector shader={data.shader} /> : null}
+				<div className="title-bar-controls" style={{
+					display: data.deletable === false ? 'none' : '',
+				}}>
 					<button aria-label="Minimize" />
 					<button aria-label="Maximize" />
 					<button aria-label="Close"
-						style={{
-							display: data.deletable === false ? 'none' : '',
-						}} onClick={() => {
+						onClick={() => {
 							node.delete();
 						}}
 					/>
@@ -522,7 +522,7 @@ function Editor({ onChange }) {
 		const timeout = setTimeout(() => {
 			if (nodes.length > 0) return;
 
-			const maxNodeCount = 4;
+			const maxNodeCount = 5;
 			const tempNodeWidth = nodeWidth + 50;
 			const startX = (-maxNodeCount / 2) * tempNodeWidth + tempNodeWidth / 2;
 

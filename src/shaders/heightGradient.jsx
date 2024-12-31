@@ -43,7 +43,7 @@ function UI({ node, shader }) {
 						}}
 					/>
 					<label htmlFor={"yAxis" + node.id}>
-						y axis
+						invert
 					</label>
 				</div>
 
@@ -51,7 +51,6 @@ function UI({ node, shader }) {
 					<label>
 						min:
 						<input
-							className="has-box-indicator"
 							type="range"
 							min="0"
 							max={sliderResolution}
@@ -69,7 +68,6 @@ function UI({ node, shader }) {
 					<label>
 						max:
 						<input
-							className="has-box-indicator"
 							type="range"
 							min="0"
 							max={sliderResolution}
@@ -89,7 +87,6 @@ function UI({ node, shader }) {
 					<label>
 						scale:
 						<input
-							className="has-box-indicator"
 							type="range"
 							min="0.1"
 							max={10}
@@ -155,8 +152,10 @@ export class HeightGradientShader extends BaseShader {
 					mix(
 						colorA, 
 						colorB, 
-						min(1.0, 
-							max(0.0, 
+						${data.yAxis ? '1.0 - ': ''} min(
+							1.0, 
+							max(
+								0.0, 
 								(vPos.y - minHeight) / (maxHeight - minHeight)
 							)
 						)
