@@ -1,9 +1,9 @@
 import { Delete, DragIndicator } from "@mui/icons-material";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { EventEmitter } from "./emitter";
-import { StartShader } from "./shaders/StartStopUtils";
+import { StartShader } from "./shaders/start";
 import { blendModes, compileShaders, useShaderData } from "./shaders/BASE";
-import { CheckerboardShader } from "./shaders/Checkerboard";
+import { CheckerboardShader } from "./shaders/checkerboard";
 import { BubbleShader } from "./shaders/bubbles";
 import { SimpleGradientShader } from "./shaders/simplegradient";
 import { HeightGradientShader } from "./shaders/heightGradient";
@@ -191,7 +191,10 @@ export function useNodeData(node) {
 	const [data, setData] = useState(node ? node.getData() : false);
 
 	useEffect(() => {
-		if (!node) return;
+		if (!node) {
+			setData(false);
+			return;
+		}
 		function moveListener() {
 			setData(node.getData());
 		}
@@ -409,7 +412,7 @@ function NodeRenderer({ node }) {
 			onDragExit={e => {
 				setOutlined(false);
 			}}
-			className={"absolute text-white box-border"}
+			className={"absolute text-white box-border z-30"}
 			style={{
 				transform: 'translate(' + data.x + 'px, ' + data.y + 'px)',
 				outline: outlined ? '2px dashed blue' : '',

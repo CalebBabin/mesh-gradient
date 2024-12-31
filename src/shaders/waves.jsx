@@ -19,8 +19,7 @@ const maxHeight = 10;
 function UI({ node, shader }) {
     const sData = useShaderData(shader);
 
-    return <div className="absolute inset-0 p-2 bg-red flex flex-col justify-center items-center text-center">
-        <div className="absolute pointer-events-none -z-10 inset-[3px] bg-black opacity-60" />
+    return <div className="absolute inset-0 p-2 flex flex-col justify-center items-center text-center text-[#222]">
         <div className="flex justify-stretch w-full pt-6">
             <StrengthSlider shader={shader} />
             <div>
@@ -116,7 +115,7 @@ export class WaveShader extends BaseShader {
             vertex: /*glsl*/`
                 vec3 speed = vec3(${trailZero(speed[0])}, ${trailZero(speed[1])}, 1.0);
                 vec3 scale = vec3(${trailZero((scale[0] ?? 1.0) * scaleFactor)}, ${trailZero((scale[1] ?? 1.0) * scaleFactor)}, ${trailZero((scale[2] ?? 1.0) * scaleFactor)});
-                float slowTime = uTime * 0.0001;
+                float slowTime = time * 0.0001;
 
                 offset.y = (simplexNoise3D(vec3(
                     vUv.x * scale.x + slowTime * speed.x,

@@ -28,7 +28,7 @@ export function StrengthSlider({ shader }) {
 }
 
 function UI({ node, shader }) {
-	return <div className="absolute inset-0 bg-red flex justify-center items-center text-center">
+	return <div className="absolute inset-0 flex justify-center items-center text-center">
 		<span>
 			base node
 		</span>
@@ -125,6 +125,7 @@ export function compileShaders(startNode) {
 	let compiledVert = /* glsl */`
 		${sharedStart}
 		void main() {
+			float time = uTime;
 			if (viewportSize.x < viewportSize.y) {
 				vUv = vec2(uv.x, uv.y * (viewportSize.y/viewportSize.x));
 			} else {

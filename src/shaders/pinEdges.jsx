@@ -15,7 +15,7 @@ import { BaseShader, StrengthSlider, useShaderData } from "./BASE.jsx";
 function UI({ node, shader }) {
     const sData = useShaderData(shader);
 
-    return <div className="absolute inset-0 p-2 bg-red flex flex-col justify-center items-center text-center">
+    return <div className="absolute inset-0 p-2 flex flex-col justify-center items-center text-center">
         <div className="flex justify-stretch w-full pt-6 text-black">
             <StrengthSlider shader={shader} />
             <div>

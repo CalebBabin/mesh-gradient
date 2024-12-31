@@ -16,7 +16,7 @@ function UI({ node, shader }) {
 	const sData = useShaderData(shader);
 	const sliderResolution = 1000;
 
-	return <div className="absolute inset-0 p-2 bg-red flex flex-col justify-center items-center text-center">
+	return <div className="absolute inset-0 p-2 flex flex-col justify-center items-center text-center">
 		<div className="flex justify-stretch w-full pt-6 text-black">
 			<StrengthSlider shader={shader} />
 			<div>

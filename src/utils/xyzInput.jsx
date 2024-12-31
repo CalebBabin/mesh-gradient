@@ -2,13 +2,13 @@ import { useCallback, useRef } from "react";
 
 
 export function XYSliderWithGraph({ data = [0, 0], onChange, label }) {
-	return <div className="flex gap-2 my-2 items-center">
-		<div>
-			<div>{label}</div>
+	return <fieldset className="text-left">
+		<legend>{label}</legend>
+		<div className="flex gap-1">
 			<XYInput data={data} onChange={onChange} />
+			<XYSlider data={data} onChange={onChange} />
 		</div>
-		<XYSlider data={data} onChange={onChange} />
-	</div>
+	</fieldset>
 }
 
 export function XYSlider({ data = [0, 0], onChange }) {
@@ -39,19 +39,22 @@ export function XYInput({ data = [0, 0], onChange }) {
 
 	return <div className='flex'>
 		<div
-			className='w-10 relative cursor-crosshair aspect-square rounded-sm border border-solid border-sky-500'
-			ref={canvasRef}
-			onClick={onClick}
+			className='w-10 aspect-square bg-black border-2 border-solid border-black relative cursor-crosshair rounded-sm'
 		>
-			<div className='absolute inset-0 left-1/2 right-auto w-[1px] bg-amber-400' />
-			<div className='absolute inset-0 top-1/2 bottom-auto h-[1px] bg-amber-400' />
 			<div
-				className="absolute w-2 h-2 -m-1 rounded-full bg-sky-500"
-				style={{
-					left: `${(data[0] * 0.5 + 0.5) * 100}%`,
-					top: `${(data[1] * 0.5 + 0.5) * 100}%`
-				}}
-			/>
+				ref={canvasRef}
+				onClick={onClick}
+				className="absolute inset-0 border-solid border-sky-500 rounded-sm">
+				<div className='absolute inset-0 left-1/2 right-auto w-[1px] bg-amber-400' />
+				<div className='absolute inset-0 top-1/2 bottom-auto h-[1px] bg-amber-400' />
+				<div
+					className="absolute w-2 h-2 -m-1 rounded-full bg-sky-500"
+					style={{
+						left: `${(data[0] * 0.5 + 0.5) * 100}%`,
+						top: `${(data[1] * 0.5 + 0.5) * 100}%`
+					}}
+				/>
+			</div>
 		</div>
 	</div>
 }

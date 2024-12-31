@@ -1,6 +1,6 @@
 import { trailZero } from "../utils";
 import { BaseShader, StrengthSlider, useShaderData } from "./BASE";
-import { XYInput } from "../utils/xyzInput.jsx";
+import { XYSliderWithGraph } from "../utils/xyzInput.jsx";
 
 
 /** @typedef {import('../editor.jsx').Node} Node */
@@ -19,8 +19,7 @@ const maxHeight = 5000;
 function UI({ node, shader }) {
 	const sData = useShaderData(shader);
 
-	return <div className="absolute inset-0 p-2 bg-red flex flex-col justify-center items-center text-center">
-		<div className="absolute pointer-events-none -z-10 inset-[3px] bg-black opacity-60" />
+	return <div className="absolute inset-0 p-2 flex flex-col justify-center items-center text-center text-[#222]">
 		<div className="flex justify-stretch w-full pt-6">
 			<StrengthSlider shader={shader} />
 			<div>
@@ -60,7 +59,7 @@ function UI({ node, shader }) {
 					<label>{maxHeight}</label>
 				</div>
 
-				<XYInput data={sData.speed} onChange={v => {
+				<XYSliderWithGraph label="speed" data={sData.speed} onChange={v => {
 					shader.data = {
 						speed: v,
 					};
@@ -77,8 +76,8 @@ export class BubbleShader extends BaseShader {
 	UI = UI;
 
 	defaults = {
-		size: 0.5,
-		height: 0.5,
+		size: 0.65,
+		height: 1,
 		speed: [0, 0, 0],
 	};
 
@@ -104,7 +103,7 @@ export class BubbleShader extends BaseShader {
 		return {
 			vertex: /*glsl*/`
             vec3 speed = vec3(${trailZero(speed[0])}, ${trailZero(speed[1])}, 0.0);
-            float slowTime = uTime * 0.001;
+            float slowTime = time * 0.001;
 
 
             float tileCount = ${trailZero(Math.pow(size, 4.0) * maxSize)};

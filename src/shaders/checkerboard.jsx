@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { trailZero } from "../utils";
-import { BaseShader, StrengthSlider, useShaderData } from "./BASE";
+import { trailZero } from "../utils.js";
+import { BaseShader, StrengthSlider, useShaderData } from "./BASE.jsx";
 import { XYInput } from "../utils/xyzInput.jsx";
 import { ColorPicker } from "../utils/colorPicker.jsx";
 /** @typedef {import('../editor.jsx').Node} Node */
@@ -17,7 +17,7 @@ function UI({ node, shader }) {
 	const maxBuffer = 100;
 	const [lockAspect, setLockAspect] = useState(true);
 
-	return <div className="absolute inset-0 p-2 bg-red flex flex-col justify-center items-center text-center">
+	return <div className="absolute inset-0 p-2 flex flex-col justify-center items-center text-center">
 		<div style={{
 			backgroundImage: 'url(/checkerboard.svg)',
 			backgroundSize: ((node.id + 2) % 3 === 0 ? '512px' : '1024px'),
@@ -161,7 +161,7 @@ export class CheckerboardShader extends BaseShader {
 		return {
 			fragment: /*glsl*/`
 		vec3 speed = vec3(${trailZero(data.speed[0])}, ${trailZero(data.speed[1])}, ${trailZero(data.speed[2])});
-		float slowTime = uTime * 0.00001;
+		float slowTime = time * 0.00001;
 
 		float x = (vUv.x + slowTime * speed.x) * ${trailZero(detailX)};
 		float y = (vUv.y + slowTime * speed.y) * ${trailZero(detailY)};
