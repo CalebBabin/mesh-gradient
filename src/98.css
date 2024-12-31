@@ -213,10 +213,10 @@ fieldset {
 }
 
 fieldset:hover {
-	background-color: rgba(255, 255, 255, 0.5);
+	background-color: #e0e0e0;
 }
 fieldset:hover > legend {
-	background-color: rgba(255, 255, 255, 0.5);
+	background-color: #e0e0e0;
 	border-radius: 0.125rem;
 }
 
