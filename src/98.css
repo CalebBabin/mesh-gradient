@@ -220,6 +220,11 @@ fieldset:hover > legend {
 	border-radius: 0.125rem;
 }
 
+legend {
+	cursor: default;
+	user-select: none;
+}
+
 .field-row {
 	align-items: center;
 	display: flex;
