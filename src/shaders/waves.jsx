@@ -31,7 +31,7 @@ function UI({ node, shader }) {
                         min={0}
                         step={0.001}
                         max={maxHeight}
-                        value={(sData.height * maxHeight) ?? 0}
+                        value={sData.height * maxHeight}
                         onChange={e => {
                             shader.data = {
                                 height: e.target.value / maxHeight
@@ -49,7 +49,7 @@ function UI({ node, shader }) {
                         min={0}
                         step={1}
                         max={maxDetail}
-                        value={(sData.detailFactor * maxDetail) ?? 0}
+                        value={sData.detailFactor * maxDetail}
                         onChange={e => {
                             shader.data = {
                                 detailFactor: e.target.value / maxDetail
