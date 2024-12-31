@@ -11,7 +11,7 @@ import { PinEdgesShader } from "./shaders/pinEdges";
 import { WaveShader } from "./shaders/waves";
 
 const nodeWidth = 300;
-const nodeHeight = 200;
+const nodeHeight = 225;
 
 const SVGCanvasSize = 5000;
 const SVGCanvasSizeHalf = SVGCanvasSize / 2;
@@ -523,7 +523,7 @@ function Editor({ onChange }) {
 			if (nodes.length > 0) return;
 
 			const maxNodeCount = 4;
-			const tempNodeWidth = nodeWidth + 50
+			const tempNodeWidth = nodeWidth + 50;
 			const startX = (-maxNodeCount / 2) * tempNodeWidth + tempNodeWidth / 2;
 
 			let nodeCount = 0;
@@ -531,44 +531,44 @@ function Editor({ onChange }) {
 				new Node({ deletable: false, shader: new StartShader(), x: startX + (nodeCount++) * tempNodeWidth }, context),
 				new Node({
 					x: startX + (nodeCount++) * tempNodeWidth,
-					shader: new BubbleShader({
-						size: 0.3,
-						height: 0.5,
+					shader: new WaveShader({
+						size: 0.4,
+						height: 0.35,
+						scaleFactor: 0.5,
 					}),
 				}, context),
 				new Node({
 					x: startX + (nodeCount++) * tempNodeWidth,
 					shader: new WaveShader({
-						size: 0.5,
-						height: 0.5,
+						size: 0.4,
+						height: 0.35,
+						scaleFactor: 0.5,
 					}),
 				}, context),
 				new Node({
 					x: startX + (nodeCount++) * tempNodeWidth,
 					shader: new WaveShader({
-						size: 0.5,
-						height: 0.5,
-					}),
-				}, context),
-				new Node({
-					x: startX + (nodeCount++) * tempNodeWidth,
-					shader: new WaveShader({
-						size: 0.5,
-						height: 0.5,
+						size: 0.4,
+						height: 0.35,
+						scaleFactor: 0.5,
 					}),
 				}, context),
 				new Node({
 					x: startX + (nodeCount++) * tempNodeWidth,
 					shader: new HeightGradientShader({
 						minHeight: 0.35,
-						maxHeight: 0.7,
+						maxHeight: 0.9,
 						scale: 10
 					}),
+				}, context),
+				new Node({
+					x: startX + (nodeCount++) * tempNodeWidth,
+					shader: new PinEdgesShader(),
 				}, context),
 			];
 
 			for (let i = 1; i < new_nodes.length; i++) {
-				new_nodes[i].connect(new_nodes[i-1], new_nodes[i]);
+				new_nodes[i].connect(new_nodes[i - 1], new_nodes[i]);
 			}
 
 			addNode(...new_nodes);

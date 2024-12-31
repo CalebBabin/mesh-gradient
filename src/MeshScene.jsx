@@ -49,7 +49,7 @@ export function MeshScene({
 			);
 		}
 		return new PerspectiveCamera(
-			cameraConfig.fov ??75,
+			cameraConfig.fov ?? 40,
 			cameraConfig.aspect ?? (window.innerWidth / window.innerHeight),
 			cameraConfig.near ?? 0.1,
 			cameraConfig.far ?? 1000
@@ -57,7 +57,7 @@ export function MeshScene({
 	}, [cameraConfig]);
 
 	useEffect(() => {
-		camera.position.set(0, 7, 15).normalize().multiplyScalar(15);
+		camera.position.set(0, 4, 10).normalize().multiplyScalar(22);
 		camera.lookAt(0, 0, 8);
 	}, [camera]);
 

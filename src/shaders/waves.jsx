@@ -6,7 +6,7 @@ import { XYInput, XYSlider, XYSliderWithGraph } from "../utils/xyzInput.jsx";
 /** @typedef {import('../editor.jsx').Node} Node */
 
 
-const maxScale = 500;
+const maxScale = 50;
 const maxHeight = 10;
 
 
@@ -33,7 +33,7 @@ function UI({ node, shader }) {
                         min={0}
                         step={0.001}
                         max={maxHeight}
-                        value={sData.height * maxHeight || 0}
+                        value={(sData.height * maxHeight) ?? 0}
                         onChange={e => {
                             shader.data = {
                                 height: e.target.value / maxHeight
@@ -43,7 +43,7 @@ function UI({ node, shader }) {
                     <label>{maxHeight}</label>
                 </div>
                 <div className="field-row w-full">
-                    <label>scale:</label>
+                    <label>scaleFactor:</label>
                     <label>0</label>
                     <input
                         className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
@@ -51,10 +51,10 @@ function UI({ node, shader }) {
                         min={0}
                         step={1}
                         max={maxScale}
-                        value={sData.scale * maxScale || 0}
+                        value={(sData.scaleFactor * maxScale) ?? 0}
                         onChange={e => {
                             shader.data = {
-                                scale: e.target.value / maxScale
+                                scaleFactor: e.target.value / maxScale
                             };
                         }}
                     />
@@ -105,16 +105,18 @@ export class WaveShader extends BaseShader {
 
     compile() {
         let { scale, scaleFactor, height, speed } = this.data;
-        height = Math.pow(height, 4) * maxHeight;
+        height = Math.pow(height, 2) * maxHeight;
+        scaleFactor = Math.pow(scaleFactor, 2) * maxScale;
+
         if (!height || !speed || !scale || !scaleFactor) {
             return {};
         }
+
         return {
             vertex: /*glsl*/`
-                vec3 speed = vec3(${trailZero(speed[0])}, ${trailZero(speed[1])}, 0.0);
-                vec3 scale = vec3(${trailZero(scale[0] * scaleFactor)}, ${trailZero(scale[1] * scaleFactor)}, 1.0);
+                vec3 speed = vec3(${trailZero(speed[0])}, ${trailZero(speed[1])}, 1.0);
+                vec3 scale = vec3(${trailZero((scale[0] ?? 1.0) * scaleFactor)}, ${trailZero((scale[1] ?? 1.0) * scaleFactor)}, ${trailZero((scale[2] ?? 1.0) * scaleFactor)});
                 float slowTime = uTime * 0.0001;
-
 
                 offset.y += simplexNoise3D(vec3(
                     vUv.x * scale.x + slowTime * speed.x,
