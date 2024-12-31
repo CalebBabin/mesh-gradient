@@ -412,7 +412,7 @@ function NodeRenderer({ node }) {
 			onDragExit={e => {
 				setOutlined(false);
 			}}
-			className={"absolute text-white box-border z-30"}
+			className={"absolute text-white box-border z-30 flex flex-col justify-stretch items-stretch"}
 			style={{
 				transform: 'translate(' + data.x + 'px, ' + data.y + 'px)',
 				outline: outlined ? '2px dashed blue' : '',
@@ -426,11 +426,11 @@ function NodeRenderer({ node }) {
 				<div className="window-body absolute inset-0" />
 			</div>
 
-			<div className="title-bar py-[0!important] relative z-50 gap-4 absolute top-0 left-0 right-0 m-[3px]">
+			<div className="title-bar py-[0!important] gap-4 w-auto m-[3px] mb-0">
 				<div className="title-bar-text cursor-move w-full px-2 py-0.5" ref={handleRef}>
 					{node.shader.type}
 				</div>
-				{node.shader.type !== 'StartShader' ? <BlendModeSelector shader={data.shader} /> : null}
+				{node.shader.type !== 'Start' ? <BlendModeSelector shader={data.shader} /> : null}
 				<div className="title-bar-controls" style={{
 					display: data.deletable === false ? 'none' : '',
 				}}>
@@ -443,7 +443,9 @@ function NodeRenderer({ node }) {
 					/>
 				</div>
 			</div>
-			{node?.shader?.UI ? <node.shader.UI node={node} shader={node.shader} /> : null}
+			{node?.shader?.UI ? <div className="relative w-full h-full">
+				<node.shader.UI node={node} shader={node.shader} />
+			</div> : null}
 		</div>
 	</>
 }
@@ -469,7 +471,7 @@ function Editor({ onChange }) {
 		if (nodes.length === 0) return;
 
 		const timeout = setTimeout(() => {
-			const startNode = nodes.find(node => node?.shader?.type === 'StartShader');
+			const startNode = nodes.find(node => node?.shader?.type === 'Start');
 			if (!startNode) {
 				console.error('error finding start node!');
 				console.log(nodes);

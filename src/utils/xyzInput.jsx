@@ -1,10 +1,21 @@
 import { useCallback, useRef } from "react";
 
+export function XYZSliderWithGraph({ data = [0, 0, 0], onChange, label }) {
+	return <fieldset className="text-left">
+		<legend>{label}</legend>
+		<div className="flex gap-1 items-start">
+			<XYInput data={data} onChange={newData => {
+				onChange([newData[0], newData[1], data[2]]);
+			}} />
+			<XYZSlider data={data} onChange={onChange} />
+		</div>
+	</fieldset>
+}
 
 export function XYSliderWithGraph({ data = [0, 0], onChange, label }) {
 	return <fieldset className="text-left">
 		<legend>{label}</legend>
-		<div className="flex gap-1">
+		<div className="flex gap-1 items-start">
 			<XYInput data={data} onChange={onChange} />
 			<XYSlider data={data} onChange={onChange} />
 		</div>
@@ -25,6 +36,26 @@ export function XYSlider({ data = [0, 0], onChange }) {
 		</div>
 	</div>
 }
+
+export function XYZSlider({ data = [0, 0, 0], onChange }) {
+	return <div className='flex flex-col'>
+		<div className="flex gap-2 items-center">
+			<span>x</span>
+			<input type="range" min={-1} max={1} step={0.001} value={data[0]} onChange={e => onChange([Number(e.target.value), data[1], data[2]])} />
+			<input type="number" value={data[0]} onChange={e => onChange([Number(e.target.value), data[1], data[2]])} className="w-12 overflow-hidden text-left" />
+		</div>
+		<div className="flex gap-2 items-center">
+			<span>y</span>
+			<input type="range" min={-1} max={1} step={0.001} value={data[1]} onChange={e => onChange([data[0], Number(e.target.value), data[2]])} />
+			<input type="number" value={data[1]} onChange={e => onChange([data[0], Number(e.target.value), data[2]])} className="w-12 overflow-hidden text-left" />
+		</div>
+		<div className="flex gap-2 items-center">
+			<span>z</span>
+			<input type="range" min={-1} max={1} step={0.001} value={data[2]} onChange={e => onChange([data[0], data[1], Number(e.target.value)])} />
+			<input type="number" value={data[2]} onChange={e => onChange([data[0], data[1], Number(e.target.value)])} className="w-12 overflow-hidden text-left" />
+		</div>
+	</div>
+};
 
 export function XYInput({ data = [0, 0], onChange }) {
 	const canvasRef = useRef();

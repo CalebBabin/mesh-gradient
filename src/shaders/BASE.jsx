@@ -8,7 +8,7 @@ import { trailZero } from "../utils";
 export function StrengthSlider({ shader }) {
 	const shaderData = useShaderData(shader);
 
-	return <div className="field-row w-6">
+	return <div className="field-row w-6" title="strength">
 		<div className="is-vertical">
 			<input
 				className="has-box-indicator"
@@ -36,7 +36,7 @@ function UI({ node, shader }) {
 };
 
 export const useShaderData = (shader) => {
-	const [data, setData] = useState({ ...shader.data });
+	const [data, setData] = useState(shader ? { ...shader.data } : false);
 	useEffect(() => {
 		const listener = () => {
 			setData({ ...shader.data });
@@ -103,7 +103,7 @@ export function compileShaders(startNode) {
 	const sharedStart = /* glsl */`
 		precision highp float;
 
-		varying vec2 vUv;
+		varying vec2 vertexUv;
 		varying vec2 originalUv;
 		varying vec2 vertexNoise;
 
@@ -113,19 +113,24 @@ export function compileShaders(startNode) {
 		uniform float uTime;
 		uniform float uScale;
 
+
 		${GLSL_simplexNoise3D}
 		${GLSL_colorSpaces}
 	`;
 	let compiledFrag = /* glsl */`
 		${sharedStart}
 		void main() {
+			vec2 vUv = vertexUv;
+			vec3 time = vec3(uTime);
 			vec4 color = vec4(1.0);
 			gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 	`;
 	let compiledVert = /* glsl */`
 		${sharedStart}
 		void main() {
-			float time = uTime;
+			float globalHeightScale = 1.0;
+			vec3 time = vec3(uTime);
+			vec2 vUv = vec2(uv.x, uv.y);
 			if (viewportSize.x < viewportSize.y) {
 				vUv = vec2(uv.x, uv.y * (viewportSize.y/viewportSize.x));
 			} else {
@@ -172,7 +177,11 @@ export function compileShaders(startNode) {
 			const { fragment, vertex } = shader.compile();
 			if (fragment) {
 				compiledFrag += `{
-				color = vec4(1.0);
+				color.x = 0.0;
+				color.y = 0.0;
+				color.z = 0.0;
+				color.w = 1.0;
+
 				${fragment}\n`;
 
 				if (shader.data.blendMode === 'set') {
@@ -203,9 +212,10 @@ export function compileShaders(startNode) {
 	}
 
 	compiledFrag += '\n}';
-	compiledVert += `
+	compiledVert += /*glsl*/`
 		vPos = final_offset;
-		gl_Position = projectionMatrix * modelViewMatrix * vec4(position + vec3(final_offset.x, final_offset.z, final_offset.y), 1.0);
+		vertexUv = uv;
+		gl_Position = projectionMatrix * modelViewMatrix * vec4(position + vec3(final_offset.x, final_offset.z, final_offset.y * globalHeightScale), 1.0);
 	}
 	`;
 

@@ -19,8 +19,8 @@ const maxHeight = 5000;
 function UI({ node, shader }) {
 	const sData = useShaderData(shader);
 
-	return <div className="absolute inset-0 p-2 flex flex-col justify-center items-center text-center text-[#222]">
-		<div className="flex justify-stretch w-full pt-6">
+	return <div className="inset-0 absolute p-2 flex flex-col justify-center items-center text-center text-[#222]">
+		<div className="flex justify-stretch w-full">
 			<StrengthSlider shader={shader} />
 			<div>
 				<div className="field-row w-full">
@@ -103,14 +103,14 @@ export class BubbleShader extends BaseShader {
 		return {
 			vertex: /*glsl*/`
             vec3 speed = vec3(${trailZero(speed[0])}, ${trailZero(speed[1])}, 0.0);
-            float slowTime = time * 0.001;
+            float slowTime = 0.001;
 
 
             float tileCount = ${trailZero(Math.pow(size, 4.0) * maxSize)};
             float tileSize = 1.0 / tileCount;
 
-            float initialX = vUv.x * tileCount + slowTime * speed.x;
-            float initialY = vUv.y * tileCount + slowTime * speed.y;
+            float initialX = vUv.x * tileCount + (time.x * slowTime) * speed.x;
+            float initialY = vUv.y * tileCount + (time.y * slowTime) * speed.y;
 
             float localX = (initialX - floor(initialX));
             float localY = (initialY - floor(initialY));
