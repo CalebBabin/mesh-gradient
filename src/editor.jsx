@@ -539,7 +539,7 @@ function Editor({ onChange }) {
 					shader: new WaveShader({
 						size: 0.4,
 						height: 0.35,
-						scaleFactor: 0.5,
+						detailFactor: 0.5,
 					}),
 				}, context),
 				new Node({
@@ -547,7 +547,7 @@ function Editor({ onChange }) {
 					shader: new WaveShader({
 						size: 0.4,
 						height: 0.35,
-						scaleFactor: 0.5,
+						detailFactor: 0.5,
 					}),
 				}, context),
 				new Node({
@@ -556,7 +556,7 @@ function Editor({ onChange }) {
 						blendMode: 'subtract',
 						size: 0.4,
 						height: 0.5,
-						scaleFactor: 0.5,
+						detailFactor: 0.5,
 					}),
 				}, context),
 				new Node({
@@ -609,10 +609,11 @@ function Editor({ onChange }) {
 };
 
 const availableShaders = [
-	CheckerboardShader,
+	WaveShader,
 	BubbleShader,
 	SimpleGradientShader,
 	HeightGradientShader,
+	CheckerboardShader,
 	PinEdgesShader,
 ];
 function AddNodePopup({ addNode }) {
