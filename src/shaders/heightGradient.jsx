@@ -89,7 +89,7 @@ function UI({ node, shader }) {
 						<input
 							type="range"
 							min="0.1"
-							max={10}
+							max={20}
 							step="0.1"
 							value={sData.scale}
 							onChange={e => {
