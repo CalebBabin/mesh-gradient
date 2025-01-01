@@ -60,7 +60,7 @@ function UI({ node, shader }) {
 								const value = Number(e.target.value) / sliderResolution;
 								shader.data = {
 									minHeight: value,
-									maxHeight: Math.max(sData.maxHeight, value),
+									maxHeight: Math.max(sData.maxHeight,  value + 0.001),
 								}
 							}}
 						/>
@@ -76,7 +76,7 @@ function UI({ node, shader }) {
 							onChange={e => {
 								const value = Number(e.target.value) / sliderResolution;
 								shader.data = {
-									minHeight: Math.min(sData.minHeight, value),
+									minHeight: Math.min(sData.minHeight, value - 0.001),
 									maxHeight: value,
 								}
 							}}
