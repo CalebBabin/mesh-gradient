@@ -20,7 +20,7 @@ function FullscreenButton({ hide = false }) {
 
 	return <button
 		style={{ opacity: hide ? 0 : 1 }}
-		className='absolute top-2 right-2 p-2 hover:text-white text-black transition-opacity duration-500'
+		className='absolute top-2 right-4 p-2 hover:text-white text-black transition-opacity duration-500'
 		onClick={() => {
 			if (isFullscreen) {
 				document.exitFullscreen();

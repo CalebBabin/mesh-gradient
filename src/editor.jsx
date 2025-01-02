@@ -602,10 +602,20 @@ function Editor({ onChange }) {
 		}
 	}, [nodes, deleteNode]);
 
-	return <div className={"absolute top-1/2 left-1/2"}>
-		{renderedNodes}
+	return <>
+		<div ref={(ref) => {
+			if (!ref) return;
+			ref.scrollTo(SVGCanvasSizeHalf - window.innerWidth / 2, SVGCanvasSizeHalf - window.innerHeight / 2);
+		}} className="absolute inset-0 w-full h-full overflow-auto">
+			<div className={"absolute"} style={{
+				top: SVGCanvasSizeHalf + 'px',
+				left: SVGCanvasSizeHalf + 'px',
+			}}>
+				{renderedNodes}
+			</div>
+		</div>
 		<AddNodePopup addNode={addNode} />
-	</div>
+	</>;
 };
 
 const availableShaders = [
@@ -622,12 +632,11 @@ function AddNodePopup({ addNode }) {
 	return <>
 		<button onClick={() => {
 			setActive(!active);
-		}} className="absolute top-[calc(-50vh+0.5rem)] left-[calc(-50vw+0.5rem)] z-[99]">
+		}} className="absolute top-2 left-4 z-[99]">
 			{active ? 'close' : '+add'}
 		</button>
 
 		{active ? <div className="absolute top-[-50vh] left-[-50vw] p-4 gap-2 pt-16 w-32 max-w-[90vw] h-screen flex flex-col items-center bg-black/50 backdrop-blur-sm z-[98] overflow-auto">
-
 			{availableShaders.map((Shader, i) => {
 				return <button
 					key={i}
