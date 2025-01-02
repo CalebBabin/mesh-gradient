@@ -9,6 +9,7 @@ import { SimpleGradientShader } from "./shaders/simplegradient";
 import { HeightGradientShader } from "./shaders/heightGradient";
 import { PinEdgesShader } from "./shaders/pinEdges";
 import { WaveShader } from "./shaders/waves";
+import { ExportCanvasButton } from "./MeshScene";
 
 const nodeWidth = 300;
 const nodeHeight = 225;
@@ -615,6 +616,10 @@ function Editor({ onChange }) {
 			</div>
 		</div>
 		<AddNodePopup addNode={addNode} />
+
+		<div className="absolute top-2 left-1/2">
+			<ExportCanvasButton />
+			</div>
 	</>;
 };
 

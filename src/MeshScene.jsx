@@ -6,7 +6,7 @@ import {
 	OrthographicCamera,
 	PerspectiveCamera,
 } from 'three';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 export function MeshAdder({ geometry, material, scale, rotation }) {
 	const { scene } = useThree();
@@ -63,9 +63,50 @@ export function MeshScene({
 
 	return <div className='w-full h-full inset-0 absolute'>
 		<Canvas
+			gl={{
+				preserveDrawingBuffer: true,
+				antialias: true,
+			}}
+			ref={(canvas) => {
+				window.canvas = canvas;
+				window.dispatchEvent(new Event('canvas-ready'));
+			}}
 			camera={camera}
 		>
 			{children}
 		</Canvas>
 	</div>
+}
+
+export function ExportCanvasButton() {
+	const [visible, setVisible] = useState(false);
+	useEffect(() => {
+		const listener = () => {
+			setVisible(true);
+		}
+		if (window.canvas) {
+			setVisible(true);
+		} else {
+			window.addEventListener('canvas-ready', listener);
+		}
+
+		return () => {
+			window.removeEventListener('canvas-ready', listener);
+		}
+	}, []);
+
+	if (!visible) return null;
+	return <button
+		className='absolute -ml-[50%] p-2 text-black'
+		onClick={() => {
+			const link = document.createElement('a');
+			const date = new Date();
+			link.download = `gradient.tapetools.io-${date.toISOString()}.png`;
+			window.canvas.toBlob((blob) => {
+				link.href = URL.createObjectURL(blob);
+				link.click();
+			});
+		}}>
+		export.png
+	</button>
 }
