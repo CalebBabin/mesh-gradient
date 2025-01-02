@@ -641,7 +641,7 @@ function AddNodePopup({ addNode }) {
 			{active ? 'close' : '+add'}
 		</button>
 
-		{active ? <div className="absolute top-[-50vh] left-[-50vw] p-4 gap-2 pt-16 w-32 max-w-[90vw] h-screen flex flex-col items-center bg-black/50 backdrop-blur-sm z-[98] overflow-auto">
+		{active ? <div className="absolute top-0 left-0 p-4 gap-2 pt-16 w-32 max-w-[90vw] h-screen flex flex-col items-center bg-black/50 backdrop-blur-sm z-[98] overflow-auto">
 			{availableShaders.map((Shader, i) => {
 				return <button
 					key={i}
