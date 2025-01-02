@@ -575,7 +575,7 @@ function Editor({ onChange }) {
 			}
 
 			addNode(...new_nodes);
-		}, 1000);
+		}, 100);
 		return () => {
 			clearTimeout(timeout);
 		}
@@ -603,11 +603,26 @@ function Editor({ onChange }) {
 		}
 	}, [nodes, deleteNode]);
 
+	const ref = useRef();
+	useEffect(() => {
+		if (!ref.current || ref.current.dataset.scrolled) return;
+		ref.current.dataset.scrolled = true;
+		const x = SVGCanvasSizeHalf - window.innerWidth / 2;
+		const y = SVGCanvasSizeHalf - window.innerHeight / 2;
+		ref.current.scrollTo(x, y);
+
+		const timeout = setTimeout(() => {
+			ref.current.scrollTo(x, y);
+		}, 1000);
+
+		return () => {
+			if (ref.current) delete ref.current.dataset.scrolled;
+			clearTimeout(timeout);
+		}
+	}, [ref.current]);
+
 	return <>
-		<div ref={(ref) => {
-			if (!ref || (ref.scrollTop !== 0 || ref.scrollLeft !== 0)) return;
-			ref.scrollTo(SVGCanvasSizeHalf - window.innerWidth / 2, SVGCanvasSizeHalf - window.innerHeight / 2);
-		}} className="absolute inset-0 w-full h-full overflow-auto">
+		<div ref={ref} className="absolute inset-0 w-full h-full overflow-auto">
 			<div className={"absolute"} style={{
 				top: SVGCanvasSizeHalf + 'px',
 				left: SVGCanvasSizeHalf + 'px',
@@ -617,9 +632,9 @@ function Editor({ onChange }) {
 		</div>
 		<AddNodePopup addNode={addNode} />
 
-		<div className="absolute top-2 left-1/2">
+		<div className="absolute z-[200] top-2 left-1/2">
 			<ExportCanvasButton />
-			</div>
+		</div>
 	</>;
 };
 

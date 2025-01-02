@@ -97,7 +97,7 @@ export function ExportCanvasButton() {
 
 	if (!visible) return null;
 	return <button
-		className='absolute -ml-[50%] p-2 text-black'
+		className='-ml-[50%] p-2 text-black'
 		onClick={() => {
 			const link = document.createElement('a');
 			const date = new Date();
