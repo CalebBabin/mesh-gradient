@@ -605,7 +605,7 @@ function Editor({ onChange }) {
 
 	return <>
 		<div ref={(ref) => {
-			if (!ref || (ref.scrollTop !== 0 && ref.scrollLeft !== 0)) return;
+			if (!ref || (ref.scrollTop !== 0 || ref.scrollLeft !== 0)) return;
 			ref.scrollTo(SVGCanvasSizeHalf - window.innerWidth / 2, SVGCanvasSizeHalf - window.innerHeight / 2);
 		}} className="absolute inset-0 w-full h-full overflow-auto">
 			<div className={"absolute"} style={{
