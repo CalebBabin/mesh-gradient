@@ -14,9 +14,9 @@ export function ColorPicker({ color, onChange }) {
 				setActive(false)
 			};
 		}
-		window.addEventListener('click', listener);
+		window.addEventListener('mousedown', listener);
 
-		return () => window.removeEventListener('click', listener);
+		return () => window.removeEventListener('mousedown', listener);
 	}, [ref, active]);
 
 	return <button ref={ref} className='relative' onClick={() => setActive(!active)}>
